@@ -1,4 +1,5 @@
 #pragma once
+
 #include "glad/glad.h"
 #include <GLFW/glfw3.h>
 
@@ -7,7 +8,7 @@
 class RENDER_API MainWindow
 {
 public:
-	MainWindow();
+	MainWindow(int width, int height);
 	~MainWindow();
 	void show();
 

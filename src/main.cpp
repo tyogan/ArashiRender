@@ -4,7 +4,7 @@
 #include "Render/mainwindow.h"
 int main()
 {
-	MainWindow win;
+	MainWindow win(800,600);
 	win.show();
 	return 0;
 }
