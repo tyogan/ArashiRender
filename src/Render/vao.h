@@ -2,14 +2,15 @@
 
 #include "glad/glad.h"
 
-class VAO
+class RENDER_API VAO
 {
 public:
 	VAO();
 	~VAO();
 
-	void create(const float* data,const int* indices,int idxNum);
+	void create(const float* data, int dataNum,const int* indices,GLuint idxNum);
 	void draw();
 private:
-	unsigned int m_VAO;
+	GLuint m_VAO;
+	GLuint m_IdxNum;
 };
