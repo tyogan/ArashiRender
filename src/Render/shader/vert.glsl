@@ -13,7 +13,7 @@ out vec2 TexCoord;
 
 void main()
 {
-	gl_Position=M*vec4(position,1.0);
+	gl_Position=P*V*M*vec4(position,1.0);
 	ourColor=color;
 	TexCoord=texcoord;
 }
