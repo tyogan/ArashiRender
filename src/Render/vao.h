@@ -8,7 +8,7 @@ public:
 	VAO();
 	~VAO();
 
-	void create(const float* data, int dataNum,const int* indices,GLuint idxNum);
+	void create(const float* data, GLuint dataNum,const GLuint* indices,GLuint idxNum);
 	void draw();
 private:
 	GLuint m_VAO;

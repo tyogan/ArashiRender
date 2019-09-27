@@ -11,7 +11,7 @@ VAO::~VAO()
 	glDeleteVertexArrays(1,&m_VAO);
 }
 
-void VAO::create(const float* data,GLint dataNum,const GLint* indices, GLuint idxNum)
+void VAO::create(const float* data, GLuint dataNum,const GLuint* indices, GLuint idxNum)
 {
 	m_IdxNum = idxNum;
 	GLuint vbo;
@@ -20,7 +20,7 @@ void VAO::create(const float* data,GLint dataNum,const GLint* indices, GLuint id
 	glGenBuffers(1, &ebo);
 	glBindVertexArray(m_VAO);
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebo);
-	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(GLint)*idxNum, indices, GL_STATIC_DRAW);
+	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(GLuint)*idxNum, indices, GL_STATIC_DRAW);
 	glBindBuffer(GL_ARRAY_BUFFER, vbo);
 	glBufferData(GL_ARRAY_BUFFER, sizeof(float)*dataNum,data,GL_STATIC_DRAW);
 	glEnableVertexAttribArray(0);

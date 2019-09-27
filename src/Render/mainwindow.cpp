@@ -51,7 +51,7 @@ float vertices[] = {
 	-0.5f,  0.5f, -0.5f,  0.0f,  1.0f,  0.0f,  0.0f,  1.0f
 };
 
-GLint indices[] = {
+GLuint indices[] = {
 	0,1,2,3,4,5,
 	6,7,8,9,10,11,
 	12,13,14,15,16,17,
@@ -60,6 +60,21 @@ GLint indices[] = {
 	30,31,32,33,34,35
 };
 
+float planeVertices[] = {
+	// positions          // texture Coords 
+	 5.0f, -0.5f,  5.0f, 0.0f,  1.0f,  0.0f, 2.0f, 0.0f,
+	-5.0f, -0.5f,  5.0f, 0.0f,  1.0f,  0.0f, 0.0f, 0.0f,
+	-5.0f, -0.5f, -5.0f, 0.0f,  1.0f,  0.0f, 0.0f, 2.0f,
+
+	 5.0f, -0.5f,  5.0f, 0.0f,  1.0f,  0.0f, 2.0f, 0.0f,
+	-5.0f, -0.5f, -5.0f, 0.0f,  1.0f,  0.0f, 0.0f, 2.0f,
+	 5.0f, -0.5f, -5.0f, 0.0f,  1.0f,  0.0f, 2.0f, 2.0f
+};
+
+GLuint planeIndices[] = {
+	0,1,2,
+	3,4,5
+};
 MainWindow::MainWindow(int width,int height)
 {
 	glfwInit();
@@ -97,25 +112,30 @@ MainWindow::~MainWindow()
 
 void MainWindow::show()
 {
-	VAO square;
-	square.create(vertices,sizeof(vertices)/sizeof(float),indices, sizeof(indices)/sizeof(float));
-	Camera cam(glm::vec3(0, 0, 100.f), glm::vec3(0, 0, 0), glm::vec3(0, 1.f, 0));
+	VAO cube;
+	cube.create(vertices,sizeof(vertices)/sizeof(float),indices, sizeof(indices)/sizeof(GLuint));
+	VAO plane;
+	plane.create(planeVertices, sizeof(planeVertices) / sizeof(float), indices, sizeof(planeIndices) / sizeof(GLuint));
+	Camera cam(glm::vec3(0,0.f, 3.f), glm::vec3(0, 0, 0), glm::vec3(0, 1.f, 0));
 	ShaderProgram shader("bin/shader/vert.glsl", "bin/shader/frag.glsl");
 	glm::mat4 model;
-	model = glm::scale(model, glm::vec3(0.5f));
+	//model = glm::scale(model, glm::vec3(0.5f));
+	model = glm::rotate(model, -20.f, glm::vec3(0, 1.f, 0));
 	glm::mat4 view;
 	view = cam.getViewMat();
 	glm::mat4 proj;
 	proj = cam.getProjMat(45.f, 800.f / 600.f, 0.1f, 100.f);
+	glEnable(GL_DEPTH_TEST);
 	while (!glfwWindowShouldClose(m_pWindow))
 	{
 		glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
-		glClear(GL_COLOR_BUFFER_BIT);
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 		shader.use();
-		shader.setMat4fv("M", model);
-		shader.setMat4fv("V", view);
-		shader.setMat4fv("P", proj);
-		square.draw();
+		shader.setMat4f("M", model);
+		shader.setMat4f("V", view);
+		shader.setMat4f("P", proj);
+		cube.draw();
+		plane.draw();
 		glfwPollEvents();
 		glfwSwapBuffers(m_pWindow);
 	}

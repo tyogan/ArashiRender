@@ -17,5 +17,5 @@ glm::mat4 Camera::getViewMat()
 
 glm::mat4 Camera::getProjMat(float fov, float aspect, float near, float far)
 {
-	return glm::perspective(glm::radians(fov), aspect, near, far);
+	return glm::perspective(fov, aspect, near, far);
 }
