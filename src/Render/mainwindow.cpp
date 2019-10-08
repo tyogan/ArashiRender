@@ -112,30 +112,54 @@ MainWindow::~MainWindow()
 
 void MainWindow::show()
 {
+	//camera
+	Camera cam(glm::vec3(0, 0.f, 3.f), glm::vec3(0, 0, 0), glm::vec3(0, 1.f, 0));
+
+	//object
 	VAO cube;
 	cube.create(vertices,sizeof(vertices)/sizeof(float),indices, sizeof(indices)/sizeof(GLuint));
 	VAO plane;
 	plane.create(planeVertices, sizeof(planeVertices) / sizeof(float), indices, sizeof(planeIndices) / sizeof(GLuint));
-	Camera cam(glm::vec3(0,0.f, 3.f), glm::vec3(0, 0, 0), glm::vec3(0, 1.f, 0));
-	ShaderProgram shader("bin/shader/vert.glsl", "bin/shader/frag.glsl");
-	glm::mat4 model;
+	
+	ShaderProgram shader("bin/shader/obj_vert.glsl", "bin/shader/obj_frag.glsl");
+	glm::mat4 model,view,proj;
 	//model = glm::scale(model, glm::vec3(0.5f));
 	model = glm::rotate(model, -20.f, glm::vec3(0, 1.f, 0));
-	glm::mat4 view;
 	view = cam.getViewMat();
-	glm::mat4 proj;
 	proj = cam.getProjMat(45.f, 800.f / 600.f, 0.1f, 100.f);
+
+	//light
+	VAO light;
+	light.create(vertices, sizeof(vertices) / sizeof(float), indices, sizeof(indices) / sizeof(GLuint));
+	
+	ShaderProgram lightShader("bin/shader/light_vert.glsl", "bin/shader/light_frag.glsl");
+	glm::vec3 lightPos(1.5f, 1.5f, -2.f);
+	glm::mat4 lightModel, lightView, lightProj;
+	lightModel = glm::translate(lightModel, lightPos);
+	lightModel = glm::scale(lightModel, glm::vec3(0.2f));
+	lightView = view;
+	lightProj = proj;
+
 	glEnable(GL_DEPTH_TEST);
 	while (!glfwWindowShouldClose(m_pWindow))
 	{
 		glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+		lightShader.use();
+		lightShader.setMat4f("M", lightModel);
+		lightShader.setMat4f("V", lightView);
+		lightShader.setMat4f("P", lightProj);
+		light.draw();
+
 		shader.use();
 		shader.setMat4f("M", model);
 		shader.setMat4f("V", view);
 		shader.setMat4f("P", proj);
+		shader.setVec3("lightPos", lightPos);
+		shader.setVec3("viewPos", cam.getPos());
 		cube.draw();
 		plane.draw();
+
 		glfwPollEvents();
 		glfwSwapBuffers(m_pWindow);
 	}

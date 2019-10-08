@@ -7,6 +7,7 @@ public:
 	~Camera();
 	glm::mat4 getViewMat();
 	glm::mat4 getProjMat(float fov,float aspect,float near,float far);
+	glm::vec3 getPos() { return m_Pos; }
 private:
 	glm::vec3 m_Pos;
 	glm::vec3 m_Target;

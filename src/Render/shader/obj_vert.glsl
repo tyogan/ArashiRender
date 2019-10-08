@@ -10,10 +10,13 @@ uniform mat4 P;
 
 out vec3 Normal;
 out vec2 TexCoord;
+out vec3 FragPos;
 
 void main()
 {
 	gl_Position=P*V*M*vec4(position,1.0);
-	Normal=normal;
+	
+	Normal=mat3(transpose(inverse(M)))*normal;
 	TexCoord=texcoord;
+	FragPos=vec3(M*vec4(position,1.0f));
 }
