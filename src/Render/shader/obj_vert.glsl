@@ -8,9 +8,10 @@ uniform mat4 M;
 uniform mat4 V;
 uniform mat4 P;
 
+out vec3 FragPos;
 out vec3 Normal;
 out vec2 TexCoord;
-out vec3 FragPos;
+
 
 void main()
 {

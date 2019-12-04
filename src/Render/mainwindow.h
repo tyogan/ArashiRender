@@ -13,5 +13,10 @@ public:
 	void show();
 
 private:
+	GLuint genTexture();
+	void genFrameTexture(GLuint& frameId,GLuint& id);
+	void genShadowmap(GLuint& frameId, GLuint& id);
+
+private:
 	GLFWwindow* m_pWindow;
 };
