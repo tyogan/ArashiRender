@@ -4,32 +4,60 @@ out vec4 FragColor;
 
 uniform vec3 lightDir;
 uniform vec3 viewPos;
-uniform sampler2D tex;
 
-in vec3 Normal;
-in vec2 TexCoord;
-in vec3 FragPos;
+uniform sampler2D container;
+uniform sampler2D shadowmap;
+
+in VS_OUT {
+    vec3 FragPos;
+    vec3 Normal;
+    vec2 TexCoords;
+    vec4 FragPosLightSpace;
+} fs_in;
 
 vec3 lightColor = vec3(1.0f);
-//vec3 objectColor= vec3(1.0f, 0.5f, 0.31f);
-
+vec3 objectColor=vec3(1.f,0.5f,0.3f);
+float ShadowCalculation(vec4 fragPosLightSpace)
+{
+	vec3 projCoords = fragPosLightSpace.xyz / fragPosLightSpace.w;
+	projCoords = projCoords * 0.5 + 0.5;
+	float closestDepth = texture(shadowmap, projCoords.xy).r;
+	float currentDepth = projCoords.z;
+	float bias = max(0.05 * (1.0 - dot(normalize(fs_in.Normal), normalize(lightDir))), 0.005);
+	float shadow = 0.0;
+	vec2 texelSize = 1.0 / textureSize(shadowmap, 0);
+	for(int x = -1; x <= 1; ++x)
+	{
+		for(int y = -1; y <= 1; ++y)
+		{
+			float pcfDepth = texture(shadowmap, projCoords.xy + vec2(x, y) * texelSize).r; 
+			shadow += currentDepth - bias > pcfDepth ? 1.0 : 0.0;        
+		}    
+	}
+	shadow /= 9.0;
+	if(projCoords.z > 1.0)
+        shadow = 0.0;
+	return shadow;
+}
 
 void main()
 {	
-	vec3 objectColor=vec3(texture(tex,TexCoord));
+	//vec3 objectColor=vec3(texture(container,fs_in.TexCoords));
 	float ambientStrenth=0.1;
 	vec3 ambient= ambientStrenth*lightColor;
 
 	vec3 lightDirN=normalize(lightDir);
-	vec3 norm=normalize(Normal);
+	vec3 norm=normalize(fs_in.Normal);
 	vec3 diffuse = lightColor*max(dot(norm, lightDirN), 0.0);
 	 	
 	float specularStrength=0.5;
-	vec3 viewDir=normalize(viewPos-FragPos);
+	vec3 viewDir=normalize(viewPos-fs_in.FragPos);
 	vec3 reflectDir = reflect(-lightDirN, norm);
 	float spec = pow(max(dot(viewDir, reflectDir), 0.0), 32);
 	vec3 specular = specularStrength * spec * lightColor;
 
-	vec3 result=(ambient+diffuse+specular)*objectColor;
+	float shadow=ShadowCalculation(fs_in.FragPosLightSpace);
+
+	vec3 result=(ambient+(1-shadow)*(diffuse+specular))*objectColor;
 	FragColor=vec4(result,1.0);
 }

@@ -3,6 +3,7 @@
 #include "vao.h"
 #include "camera.h"
 #include "vertex.h"
+#include "shadowmap.h"
 
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
@@ -37,7 +38,6 @@ MainWindow::MainWindow(int width,int height)
 			glViewport(0, 0, width, height);
 		}
 	}
-
 }
 
 MainWindow::~MainWindow()
@@ -48,15 +48,17 @@ MainWindow::~MainWindow()
 void MainWindow::show()
 {	
 	Camera cam(glm::vec3(0, 0, 10.f), glm::vec3(0, 0, 0), glm::vec3(0, 1.f, 0));
-	GLuint testTexture = genTexture();
+	GLuint testTexture = genTexture("bin/shader/container.jpg");
+	GLuint testTexture1 = genTexture("bin/shader/awesomeface.png");
 	GLuint frameId,textureId;
 	genFrameTexture(frameId,textureId);
-	GLuint shadowFrameId, shadowTextureId;
-	genFrameTexture(shadowFrameId, shadowTextureId);
+	Shadowmap shadow;
 
 	//object
 	ShaderProgram objShader("bin/shader/obj_vert.glsl", "bin/shader/obj_frag.glsl");
-	
+	objShader.use();
+	objShader.setInt("container", 0);
+	objShader.setInt("shadowmap", 1);
 	VAO cube;
 	cube.create(vertices, sizeof(vertices) / sizeof(float), indices, sizeof(indices) / sizeof(GLuint));
 	VAO plane;
@@ -72,12 +74,15 @@ void MainWindow::show()
 	ShaderProgram shadowShader("bin/shader/light_vert.glsl", "bin/shader/light_frag.glsl");
 	//shadowShader
 	GLfloat near_plane = 1.0f, far_plane = 7.5f;
-	glm::mat4 shadowProjection = glm::ortho(-10.0f, 10.0f, -10.0f, 10.0f, near_plane, far_plane);
-	glm::mat4 shadowView = glm::lookAt(glm::vec3(2.0f, 4.0f, -1.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+	glm::mat4 shadowProj = glm::ortho(-10.0f, 10.0f, -10.0f, 10.0f, near_plane, far_plane);
+	glm::mat4 shadowView = glm::lookAt(glm::vec3(2.0f, 4.0f, 1.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
 
 
 	//image
 	ShaderProgram imageShader("bin/shader/image_vert.glsl", "bin/shader/image_frag.glsl");
+	imageShader.use();
+	imageShader.setInt("image", 0);
+	imageShader.setInt("image1", 1);
 	VAO imageVert;
 	imageVert.create(imageVertices, sizeof(imageVertices) / sizeof(float), imageIndices, sizeof(imageIndices) / sizeof(GLuint));
 
@@ -87,37 +92,42 @@ void MainWindow::show()
 		glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
+		glViewport(0, 0, 1024, 1024);
+		shadow.bindForDraw();
+		shadowShader.use();
+		shadowShader.setMat4f("M", model);
+		shadowShader.setMat4f("V", shadowView);
+		shadowShader.setMat4f("P", shadowProj);
+		glCullFace(GL_FRONT);
+		cube.draw();
+		plane.draw();
+		glCullFace(GL_BACK);
+		glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+		glViewport(0, 0, 800, 600);
 		glBindFramebuffer(GL_FRAMEBUFFER, frameId);
 		glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+		glActiveTexture(GL_TEXTURE0);
+		glBindTexture(GL_TEXTURE_2D, testTexture);
+		glActiveTexture(GL_TEXTURE1);
+		glBindTexture(GL_TEXTURE_2D, shadow.readTexture());
 		objShader.use();
 		objShader.setMat4f("M", model);
 		objShader.setMat4f("V", view);
 		objShader.setMat4f("P", proj);
+		objShader.setMat4f("lightV", shadowView);
+		objShader.setMat4f("lightP", shadowProj);
 		objShader.setVec3("lightDir", glm::vec3(2.0f, 4.0f, 1.0f));
 		objShader.setVec3("viewPos", cam.getPos());
-		objShader.setInt("tex", 0);
-		glActiveTexture(GL_TEXTURE0);
-		glBindTexture(GL_TEXTURE_2D, testTexture);
 		cube.draw();
 		plane.draw();
 		glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
-		glViewport(0, 0, 1024, 1024);
-		glBindFramebuffer(GL_FRAMEBUFFER, shadowFrameId);
-		glClear(GL_DEPTH_BUFFER_BIT);
-		shadowShader.use();
-		shadowShader.setMat4f("M", model);
-		shadowShader.setMat4f("V", shadowProjection);
-		shadowShader.setMat4f("P", shadowView);
-		cube.draw();
-		plane.draw();
-		glBindFramebuffer(GL_FRAMEBUFFER, 0);
-
-		glViewport(0, 0, 800, 600);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 		imageShader.use();
-		glBindTexture(GL_TEXTURE_2D, shadowTextureId);
+		glActiveTexture(GL_TEXTURE0);
+		glBindTexture(GL_TEXTURE_2D, textureId);
 		imageVert.draw();
 
 		glfwPollEvents();
@@ -126,13 +136,13 @@ void MainWindow::show()
 	glfwTerminate();
 }
 
-GLuint MainWindow::genTexture()
+GLuint MainWindow::genTexture(std::string path)
 {
 	GLuint id;
 	glGenTextures(1, &id);
 	glBindTexture(GL_TEXTURE_2D, id);
 	int width, height, nrChannels;
-	unsigned char *data = stbi_load("bin/shader/container.jpg", &width, &height, &nrChannels, 0);
+	unsigned char *data = stbi_load(path.c_str(), &width, &height, &nrChannels, 0);
 	if (data)
 	{
 		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
@@ -168,26 +178,5 @@ void MainWindow::genFrameTexture(GLuint& frameId,GLuint& id)
 	if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
 		std::cout << "ERROR::FRAMEBUFFER:: Framebuffer is not complete!" << std::endl;
 	std::cout << "framebuffer";
-	glBindFramebuffer(GL_FRAMEBUFFER, 0);
-}
-
-void MainWindow::genShadowmap(GLuint& frameId, GLuint& id)
-{
-	glGenFramebuffers(1, &frameId);
-	glGenTextures(1, &id);
-	
-	const GLuint SHADOW_WIDTH = 1024, SHADOW_HEIGHT = 1024;
-	glBindTexture(GL_TEXTURE_2D, id);
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT,
-		SHADOW_WIDTH, SHADOW_HEIGHT, 0, GL_DEPTH_COMPONENT, GL_FLOAT, NULL);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-	
-	glBindFramebuffer(GL_FRAMEBUFFER, frameId);
-	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, id, 0);
-	glDrawBuffer(GL_NONE);
-	glReadBuffer(GL_NONE);
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }

@@ -13,7 +13,7 @@ public:
 	void show();
 
 private:
-	GLuint genTexture();
+	GLuint genTexture(std::string path);
 	void genFrameTexture(GLuint& frameId,GLuint& id);
 	void genShadowmap(GLuint& frameId, GLuint& id);
 
