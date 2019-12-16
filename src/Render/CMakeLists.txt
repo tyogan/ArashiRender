@@ -15,4 +15,4 @@ add_custom_command(TARGET Render
                    COMMAND ${CMAKE_COMMAND} -E copy_directory
                        ${CMAKE_CURRENT_SOURCE_DIR}/shader
                        ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/shader)  			   
-target_link_libraries(Render glfw3)
+target_link_libraries(Render glfw3 ${ASSIMP_LIBRARIES})

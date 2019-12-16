@@ -2,8 +2,9 @@
 #include "shader.h"
 #include "vao.h"
 #include "camera.h"
-#include "vertex.h"
 #include "shadowmap.h"
+
+#include "importer.h"
 
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
@@ -59,13 +60,27 @@ void MainWindow::show()
 	objShader.use();
 	objShader.setInt("container", 0);
 	objShader.setInt("shadowmap", 1);
-	VAO cube;
-	cube.create(vertices, sizeof(vertices) / sizeof(float), indices, sizeof(indices) / sizeof(GLuint));
-	VAO plane;
-	plane.create(planeVertices, sizeof(planeVertices) / sizeof(float), indices, sizeof(planeIndices) / sizeof(GLuint));
+	
+	Mesh cubeMesh = Mesh::createCube();
+	VAO cubeVAO;
+	cubeVAO.create(cubeMesh);
+	/*VAO plane;
+	plane.create(planeVertices, sizeof(planeVertices) / sizeof(float), indices, sizeof(planeIndices) / sizeof(GLuint));*/
+	
+	vector<Mesh> objMeshes;
+	Importer im;
+	im.loadModel("bin/model/nanosuit.obj", objMeshes);
+	vector<VAO*> vaos;
+	for (int i = 0; i < objMeshes.size(); i++)
+	{
+		VAO* tmp = new VAO();
+		tmp->create(objMeshes[i]);
+		vaos.push_back(tmp);
+	}
+
 	glm::mat4 model, view, proj;
-	model = glm::translate(model, glm::vec3(0, -2.f, 0));
-	//model = glm::scale(model, glm::vec3(0.5f));
+	model = glm::translate(model, glm::vec3(0, -3.f, 0));
+	model = glm::scale(model, glm::vec3(0.3f));
 	model = glm::rotate(model, -15.f, glm::vec3(0, 1.f, 0));
 	view = cam.getViewMat();
 	proj = cam.getProjMat(45.f, 800.f / 600.f, 0.1f, 100.f);
@@ -78,13 +93,13 @@ void MainWindow::show()
 	glm::mat4 shadowView = glm::lookAt(glm::vec3(2.0f, 4.0f, 1.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
 
 
-	//image
-	ShaderProgram imageShader("bin/shader/image_vert.glsl", "bin/shader/image_frag.glsl");
-	imageShader.use();
-	imageShader.setInt("image", 0);
-	imageShader.setInt("image1", 1);
-	VAO imageVert;
-	imageVert.create(imageVertices, sizeof(imageVertices) / sizeof(float), imageIndices, sizeof(imageIndices) / sizeof(GLuint));
+	////image
+	//ShaderProgram imageShader("bin/shader/image_vert.glsl", "bin/shader/image_frag.glsl");
+	//imageShader.use();
+	//imageShader.setInt("image", 0);
+	//imageShader.setInt("image1", 1);
+	//VAO imageVAO;
+	//imageVert.create(imageVertices, sizeof(imageVertices) / sizeof(float), imageIndices, sizeof(imageIndices) / sizeof(GLuint));
 
 	glEnable(GL_DEPTH_TEST);
 	while (!glfwWindowShouldClose(m_pWindow))
@@ -99,13 +114,17 @@ void MainWindow::show()
 		shadowShader.setMat4f("V", shadowView);
 		shadowShader.setMat4f("P", shadowProj);
 		glCullFace(GL_FRONT);
-		cube.draw();
-		plane.draw();
+		cubeVAO.draw();
+		for (int i = 0; i < vaos.size(); ++i)
+		{
+			vaos[i]->draw();
+		}
+		//plane.draw();
 		glCullFace(GL_BACK);
 		glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
 		glViewport(0, 0, 800, 600);
-		glBindFramebuffer(GL_FRAMEBUFFER, frameId);
+		//glBindFramebuffer(GL_FRAMEBUFFER, frameId);
 		glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 		glActiveTexture(GL_TEXTURE0);
@@ -120,15 +139,18 @@ void MainWindow::show()
 		objShader.setMat4f("lightP", shadowProj);
 		objShader.setVec3("lightDir", glm::vec3(2.0f, 4.0f, 1.0f));
 		objShader.setVec3("viewPos", cam.getPos());
-		cube.draw();
-		plane.draw();
-		glBindFramebuffer(GL_FRAMEBUFFER, 0);
+		cubeVAO.draw();
+		for (int i = 0; i < vaos.size(); ++i)
+		{
+			vaos[i]->draw();
+		}
+		//glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
-		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-		imageShader.use();
-		glActiveTexture(GL_TEXTURE0);
-		glBindTexture(GL_TEXTURE_2D, textureId);
-		imageVert.draw();
+		//glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+		//imageShader.use();
+		//glActiveTexture(GL_TEXTURE0);
+		//glBindTexture(GL_TEXTURE_2D, textureId);
+		//imageVert.draw();
 
 		glfwPollEvents();
 		glfwSwapBuffers(m_pWindow);
