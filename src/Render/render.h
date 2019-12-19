@@ -7,10 +7,9 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
 
-#include "render.h"
 #include "shader.h"
-
 #include "vao.h"
+#include "shadowmap.h"
 
 struct Param
 {
@@ -30,6 +29,8 @@ public:
 	void renderBackground();
 	void renderObject();
 	void renderShadow();
+
+	GLuint getTexture();
 
 private:
 	void initShader();
