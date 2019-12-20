@@ -1,9 +1,61 @@
 #include "mesh.h"
 #include "vertex.h"
 
-Mesh Mesh::createSphere()
+Mesh Mesh::createSphere(float radius, unsigned int sectorCount, unsigned int stackCount)
 {
+#ifndef M_PI
+#define M_PI (3.14159265358979323846)
+#endif
+
 	Mesh m;
+	Vertex vert;
+	float sectorStep = 2 * M_PI / sectorCount;
+	float stackStep = M_PI / stackCount;
+	float sectorAngle, stackAngle;
+	float lengthInv = 1.0 / radius;
+
+	for (int i = 0; i <= stackCount; ++i)
+	{
+		float stackAngle = i * stackStep;
+		float xz = radius * sinf(stackAngle);
+		float y = radius * cosf(stackAngle);
+		float ty = xz;
+		float txz = y;
+
+		for (int j = 0; j <= sectorCount; ++j)
+		{
+			sectorAngle = j * sectorStep;
+			float x = xz * cosf(sectorAngle);
+			float z = xz * sinf(sectorAngle);
+			vert.mPos.x = x;
+			vert.mPos.y = y;
+			vert.mPos.z = z;
+
+			vert.mNormal.x = x * lengthInv;
+			vert.mNormal.y = y * lengthInv;
+			vert.mNormal.z = z * lengthInv;
+
+			float s = (float)j / sectorCount * 180;
+			float t = (float)i / stackCount * 180;
+			vert.mTexCoords.x = s;
+			vert.mTexCoords.y = t;
+			m.mVertices.push_back(vert);
+		}
+	}
+
+	for (int i = 0; i < stackCount; ++i)
+	{
+		int k1 = i * (sectorCount + 1);
+		int k2 = k1 + sectorCount + 1;
+		for (int j = 0; j < sectorCount; ++j, ++k1, ++k2)
+		{
+			if (i != 0)
+			{
+
+			}
+		}
+	}
+
 	return m;
 }
 

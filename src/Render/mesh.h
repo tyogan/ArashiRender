@@ -18,7 +18,7 @@ class RENDER_API Mesh
 {
 public:
 	static Mesh createCube();
-	static Mesh createSphere();
+	static Mesh createSphere(float radius, unsigned int sectorCount, unsigned int stackCount);
 	static Mesh createPlane();   
 
 	unsigned int getIndicesNums();

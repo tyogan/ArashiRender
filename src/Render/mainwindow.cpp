@@ -51,9 +51,6 @@ void MainWindow::show()
 {	
 	GLuint testTexture = genTexture("bin/shader/container.jpg");
 	GLuint testTexture1 = genTexture("bin/shader/awesomeface.png");
-	//GLuint frameId,textureId;
-	//genFrameTexture(frameId,textureId);
-
 	
 	GLRender ren;
 	ren.render();

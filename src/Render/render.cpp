@@ -65,12 +65,12 @@ void GLRender::renderBackground()
 	Camera cam(glm::vec3(0, 0, 10.f), glm::vec3(0, 0, 0), glm::vec3(0, 1.f, 0));
 	glm::mat4 view = glm::mat4(glm::mat3(cam.getViewMat()));
 	glm::mat4 proj = cam.getProjMat(45.f, 800.f / 600.f, 0.1f, 100.f);
-	
+
 	glViewport(0, 0, 800, 600);
 	glDepthMask(GL_FALSE);
 	mBgShader->use();
 	glActiveTexture(GL_TEXTURE0);
-	mEnvmap.bindForRead();
+	mEnvmap.bindCubeTexture();
 	mBgShader->setMat4f("V", view);
 	mBgShader->setMat4f("P", proj);
 	mBgVAO->draw();
@@ -151,6 +151,18 @@ void GLRender::initShader()
 	mShadowShader = new ShaderProgram("bin/shader/shadowmap_vert.glsl", "bin/shader/shadowmap_frag.glsl");
 	mBgShader = new ShaderProgram("bin/shader/envmap_vert.glsl", "bin/shader/envmap_frag.glsl");
 	mBgShader->setInt("skybox", 0);
+
+	vector<string> imgNames
+	{
+		"right.jpg",
+		"left.jpg",
+		"top.jpg",
+		"bottom.jpg",
+		"front.jpg",
+		"back.jpg"
+	};
+
+	mEnvmap.load(imgNames);
 }
 
 void GLRender::initVAO()
