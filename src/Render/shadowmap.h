@@ -7,7 +7,7 @@ public:
 	Shadowmap();
 	~Shadowmap();
 	void bindForDraw();
-	GLuint readTexture();
+	GLuint getTexture();
 private:
 	GLuint mFramebuffer;
 	GLuint mTexture;

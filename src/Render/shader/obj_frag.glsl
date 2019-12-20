@@ -5,7 +5,7 @@ out vec4 FragColor;
 uniform vec3 lightDir;
 uniform vec3 viewPos;
 
-//uniform sampler2D container;
+uniform sampler2D texImage;
 uniform sampler2D shadowmap;
 
 in VS_OUT {
@@ -16,7 +16,7 @@ in VS_OUT {
 } fs_in;
 
 vec3 lightColor = vec3(1.0f);
-vec3 objectColor=vec3(0.9f,0.5f,0.3f);
+//vec3 objectColor=vec3(0.9f,0.5f,0.3f);
 float ShadowCalculation(vec4 fragPosLightSpace)
 {
 	vec3 projCoords = fragPosLightSpace.xyz / fragPosLightSpace.w;
@@ -42,7 +42,7 @@ float ShadowCalculation(vec4 fragPosLightSpace)
 
 void main()
 {	
-	//vec3 objectColor=vec3(texture(container,fs_in.TexCoords));
+	vec3 objectColor=vec3(texture(texImage,fs_in.TexCoords));
 	float ambientStrenth=0.1;
 	vec3 ambient= ambientStrenth*lightColor;
 

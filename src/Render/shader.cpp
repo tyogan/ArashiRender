@@ -68,6 +68,11 @@ void ShaderProgram::use()
 	glUseProgram(m_ID);
 }
 
+void ShaderProgram::release()
+{
+	glUseProgram(0);
+}
+
 void  ShaderProgram::setBool(const std::string &name, bool value) const
 {
 	glUniform1i(glGetUniformLocation(m_ID, name.c_str()), (int)value);

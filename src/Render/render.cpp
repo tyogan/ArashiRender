@@ -3,6 +3,8 @@
 #include "shadowmap.h"
 #include "camera.h"
 
+#include "stb_image.h"
+
 GLRender::GLRender()
 {
 	glGenFramebuffers(1, &mFBO);
@@ -45,10 +47,43 @@ GLuint GLRender::getTexture()
 GLuint GLRender::render()
 {
 	renderShadow();
+	glBindFramebuffer(GL_FRAMEBUFFER, mFBO);
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	renderBackground();
+	renderObject();
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+	return 0;
+}
+
+void GLRender::renderGBuffer()
+{
+
+}
+
+void GLRender::renderBackground()
+{
+	Camera cam(glm::vec3(0, 0, 10.f), glm::vec3(0, 0, 0), glm::vec3(0, 1.f, 0));
+	glm::mat4 view = glm::mat4(glm::mat3(cam.getViewMat()));
+	glm::mat4 proj = cam.getProjMat(45.f, 800.f / 600.f, 0.1f, 100.f);
+	
+	glViewport(0, 0, 800, 600);
+	glDepthMask(GL_FALSE);
+	mBgShader->use();
+	glActiveTexture(GL_TEXTURE0);
+	mEnvmap.bindForRead();
+	mBgShader->setMat4f("V", view);
+	mBgShader->setMat4f("P", proj);
+	mBgVAO->draw();
+	glDepthMask(GL_TRUE);
+	mBgShader->release();
+}
+
+void GLRender::renderObject()
+{
 	Camera cam(glm::vec3(0, 0, 10.f), glm::vec3(0, 0, 0), glm::vec3(0, 1.f, 0));
 	glm::mat4 model, view, proj;
 	model = glm::translate(model, glm::vec3(0, -3.f, 0));
-	model = glm::scale(model, glm::vec3(0.25f));
+	model = glm::scale(model, glm::vec3(0.3f));
 	model = glm::rotate(model, 10.f, glm::vec3(0, 1.f, 0.f));
 	view = cam.getViewMat();
 	proj = cam.getProjMat(45.f, 800.f / 600.f, 0.1f, 100.f);
@@ -58,11 +93,9 @@ GLuint GLRender::render()
 	glm::mat4 shadowView = glm::lookAt(glm::vec3(-2.0f, 4.0f, 1.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
 
 	glViewport(0, 0, 800, 600);
-	glBindFramebuffer(GL_FRAMEBUFFER, mFBO);
-	glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-	glActiveTexture(GL_TEXTURE0);
-	glBindTexture(GL_TEXTURE_2D, mShadowmap.readTexture());
+	
+	glClearColor(0.1f, 0.2f, 0.1f, 1.0f);
+	//glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 	mObjShader->use();
 	mObjShader->setMat4f("M", model);
@@ -76,20 +109,14 @@ GLuint GLRender::render()
 	{
 		mVAOs[i]->draw();
 	}
-	glBindFramebuffer(GL_FRAMEBUFFER, 0);
-	return 0;
-}
-
-void GLRender::renderObject()
-{
-
+	mObjShader->release();
 }
 
 void GLRender::renderShadow()
 {;
 	glm::mat4 shadowModel;
 	shadowModel = glm::translate(shadowModel, glm::vec3(0, -3.f, 0));
-	shadowModel = glm::scale(shadowModel, glm::vec3(0.25f));
+	shadowModel = glm::scale(shadowModel, glm::vec3(0.3f));
 	shadowModel = glm::rotate(shadowModel, 10.f, glm::vec3(0, 1.f, 0.f));
 	GLfloat near_plane = 1.0f, far_plane = 7.5f;
 	glm::mat4 shadowProj = glm::ortho(-10.0f, 10.0f, -10.0f, 10.0f, near_plane, far_plane);
@@ -108,6 +135,10 @@ void GLRender::renderShadow()
 
 	glCullFace(GL_BACK);
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+	glActiveTexture(GL_TEXTURE0);
+	glBindTexture(GL_TEXTURE_2D, mShadowmap.getTexture());
+	glActiveTexture(GL_TEXTURE1);
+	glBindTexture(GL_TEXTURE_2D, 1);
 }
 
 void GLRender::initShader()
@@ -115,9 +146,11 @@ void GLRender::initShader()
 	mObjShader = new ShaderProgram("bin/shader/obj_vert.glsl", "bin/shader/obj_frag.glsl");
 	mObjShader->use();
 	mObjShader->setInt("shadowmap", 0);
+	mObjShader->setInt("texImage", 1);
 
 	mShadowShader = new ShaderProgram("bin/shader/shadowmap_vert.glsl", "bin/shader/shadowmap_frag.glsl");
 	mBgShader = new ShaderProgram("bin/shader/envmap_vert.glsl", "bin/shader/envmap_frag.glsl");
+	mBgShader->setInt("skybox", 0);
 }
 
 void GLRender::initVAO()
@@ -128,14 +161,13 @@ void GLRender::initVAO()
 	}
 
 	Mesh cubeMesh = Mesh::createCube();
+
+	mBgVAO = new VAO();
+	mBgVAO->create((cubeMesh));
+
 	VAO* cubeVAO = new VAO();
 	cubeVAO->create(cubeMesh);
 	mVAOs.push_back(cubeVAO);
-
-	//Mesh planeMesh = Mesh::createPlane();
-	//VAO* planeVAO = new VAO();
-	//planeVAO->create(planeMesh);
-	//mVAOs.push_back(planeVAO);
 
 	vector<Mesh> bunnyMeshes;
 	Importer im;

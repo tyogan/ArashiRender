@@ -31,7 +31,7 @@ void Shadowmap::bindForDraw()
 	glReadBuffer(GL_NONE);
 }
 
-GLuint Shadowmap::readTexture()
+GLuint Shadowmap::getTexture()
 {
 	//glBindTexture(GL_TEXTURE_2D, mTexture);
 	return mTexture;

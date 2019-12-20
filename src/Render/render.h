@@ -10,6 +10,7 @@
 #include "shader.h"
 #include "vao.h"
 #include "shadowmap.h"
+#include "envmap.h"
 
 struct Param
 {
@@ -30,6 +31,8 @@ public:
 	void renderObject();
 	void renderShadow();
 
+	void renderGBuffer();
+
 	GLuint getTexture();
 
 private:
@@ -39,9 +42,13 @@ private:
 	ShaderProgram* mObjShader;
 	ShaderProgram* mShadowShader;
 	ShaderProgram* mBgShader;
+
 	Shadowmap mShadowmap;
+	Envmap mEnvmap;
 private:
 	vector<VAO*> mVAOs;
+	VAO* mBgVAO;
+
 	GLuint mFBO;
 	GLuint mTexture;
 };
