@@ -16,7 +16,6 @@ in VS_OUT {
 } fs_in;
 
 vec3 lightColor = vec3(1.0f);
-//vec3 objectColor=vec3(0.9f,0.5f,0.3f);
 float ShadowCalculation(vec4 fragPosLightSpace)
 {
 	vec3 projCoords = fragPosLightSpace.xyz / fragPosLightSpace.w;
@@ -42,7 +41,8 @@ float ShadowCalculation(vec4 fragPosLightSpace)
 
 void main()
 {	
-	vec3 objectColor=vec3(texture(texImage,fs_in.TexCoords));
+	//vec3 objectColor=vec3(texture(texImage,fs_in.TexCoords));
+	vec3 objectColor=vec3(0.8);
 	float ambientStrenth=0.1;
 	vec3 ambient= ambientStrenth*lightColor;
 

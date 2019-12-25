@@ -51,7 +51,16 @@ Mesh Mesh::createSphere(float radius, unsigned int sectorCount, unsigned int sta
 		{
 			if (i != 0)
 			{
+				m.mIndices.push_back(k1);
+				m.mIndices.push_back(k2);
+				m.mIndices.push_back(k1 + 1);
+			}
 
+			if (i != (stackCount - 1))
+			{
+				m.mIndices.push_back(k1 + 1);
+				m.mIndices.push_back(k2);
+				m.mIndices.push_back(k2 + 1);
 			}
 		}
 	}

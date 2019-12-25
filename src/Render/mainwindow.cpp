@@ -52,8 +52,6 @@ void MainWindow::show()
 	GLuint testTexture = genTexture("bin/shader/container.jpg");
 	GLuint testTexture1 = genTexture("bin/shader/awesomeface.png");
 	
-	GLRender ren;
-	ren.render();
 	ShaderProgram imageShader("bin/shader/image_vert.glsl", "bin/shader/image_frag.glsl");
 	imageShader.use();
 	imageShader.setInt("image", 0);
@@ -62,15 +60,19 @@ void MainWindow::show()
 	VAO imageVAO;
 	imageVAO.create(imageMesh);
 
+	Envmap env;
+	env.load("bin/envmap/envmap.jpg");
+	
+	GLRender ren;
 	glEnable(GL_DEPTH_TEST);
 	while (!glfwWindowShouldClose(m_pWindow))
 	{
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+		ren.render();
 		imageShader.use();
 		glActiveTexture(GL_TEXTURE0);
 		glBindTexture(GL_TEXTURE_2D, ren.getTexture());
 		imageVAO.draw();
-		ren.render();
 		glfwPollEvents();
 		glfwSwapBuffers(m_pWindow);
 	}

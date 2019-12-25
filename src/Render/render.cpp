@@ -47,8 +47,10 @@ GLuint GLRender::getTexture()
 GLuint GLRender::render()
 {
 	renderShadow();
+	mEnvmap.createCubemapTexture();
 	glBindFramebuffer(GL_FRAMEBUFFER, mFBO);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	glViewport(0, 0, 800, 600);
 	renderBackground();
 	renderObject();
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
@@ -65,17 +67,15 @@ void GLRender::renderBackground()
 	Camera cam(glm::vec3(0, 0, 10.f), glm::vec3(0, 0, 0), glm::vec3(0, 1.f, 0));
 	glm::mat4 view = glm::mat4(glm::mat3(cam.getViewMat()));
 	glm::mat4 proj = cam.getProjMat(45.f, 800.f / 600.f, 0.1f, 100.f);
-
-	glViewport(0, 0, 800, 600);
 	glDepthMask(GL_FALSE);
 	mBgShader->use();
 	glActiveTexture(GL_TEXTURE0);
-	mEnvmap.bindCubeTexture();
+	mEnvmap.bindCreateCubeTexture();
 	mBgShader->setMat4f("V", view);
 	mBgShader->setMat4f("P", proj);
 	mBgVAO->draw();
-	glDepthMask(GL_TRUE);
 	mBgShader->release();
+	glDepthMask(GL_TRUE);
 }
 
 void GLRender::renderObject()
@@ -94,8 +94,12 @@ void GLRender::renderObject()
 
 	glViewport(0, 0, 800, 600);
 	
-	glClearColor(0.1f, 0.2f, 0.1f, 1.0f);
-	//glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	glClearColor(0.1f, 0.1f, 0.3f, 1.0f);
+
+	glActiveTexture(GL_TEXTURE0);
+	glBindTexture(GL_TEXTURE_2D, mShadowmap.getTexture());
+	glActiveTexture(GL_TEXTURE1);
+	glBindTexture(GL_TEXTURE_2D, 1);
 
 	mObjShader->use();
 	mObjShader->setMat4f("M", model);
@@ -135,10 +139,6 @@ void GLRender::renderShadow()
 
 	glCullFace(GL_BACK);
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
-	glActiveTexture(GL_TEXTURE0);
-	glBindTexture(GL_TEXTURE_2D, mShadowmap.getTexture());
-	glActiveTexture(GL_TEXTURE1);
-	glBindTexture(GL_TEXTURE_2D, 1);
 }
 
 void GLRender::initShader()
@@ -151,7 +151,6 @@ void GLRender::initShader()
 	mShadowShader = new ShaderProgram("bin/shader/shadowmap_vert.glsl", "bin/shader/shadowmap_frag.glsl");
 	mBgShader = new ShaderProgram("bin/shader/envmap_vert.glsl", "bin/shader/envmap_frag.glsl");
 	mBgShader->setInt("skybox", 0);
-
 	vector<string> imgNames
 	{
 		"right.jpg",
@@ -163,6 +162,7 @@ void GLRender::initShader()
 	};
 
 	mEnvmap.load(imgNames);
+	mEnvmap.load("bin/envmap/envmap.jpg");
 }
 
 void GLRender::initVAO()
@@ -173,13 +173,17 @@ void GLRender::initVAO()
 	}
 
 	Mesh cubeMesh = Mesh::createCube();
-
+	Mesh sphereMesh = Mesh::createSphere(1, 16, 8);
 	mBgVAO = new VAO();
 	mBgVAO->create((cubeMesh));
 
 	VAO* cubeVAO = new VAO();
 	cubeVAO->create(cubeMesh);
 	mVAOs.push_back(cubeVAO);
+
+	//VAO* sphereVAO = new VAO();
+	//sphereVAO->create(sphereMesh);
+	//mVAOs.push_back(sphereVAO);
 
 	vector<Mesh> bunnyMeshes;
 	Importer im;

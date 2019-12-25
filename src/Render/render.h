@@ -42,6 +42,7 @@ private:
 	ShaderProgram* mObjShader;
 	ShaderProgram* mShadowShader;
 	ShaderProgram* mBgShader;
+	ShaderProgram* mCubeShader;
 
 	Shadowmap mShadowmap;
 	Envmap mEnvmap;
