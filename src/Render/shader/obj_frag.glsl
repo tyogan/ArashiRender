@@ -8,6 +8,8 @@ uniform vec3 viewPos;
 uniform sampler2D texImage;
 uniform sampler2D shadowmap;
 
+uniform samplerCube envmap;
+
 in VS_OUT {
     vec3 FragPos;
     vec3 Normal;
@@ -43,9 +45,9 @@ void main()
 {	
 	//vec3 objectColor=vec3(texture(texImage,fs_in.TexCoords));
 	vec3 objectColor=vec3(0.8);
-	float ambientStrenth=0.1;
-	vec3 ambient= ambientStrenth*lightColor;
-
+	float ambientStrenth=0.5;
+	vec3 ambient= vec3(texture(envmap,fs_in.Normal));
+	ambient=lightColor*ambientStrenth;
 	vec3 lightDirN=normalize(lightDir);
 	vec3 norm=normalize(fs_in.Normal);
 	vec3 diffuse = lightColor*max(dot(norm, lightDirN), 0.0);

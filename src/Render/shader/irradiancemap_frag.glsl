@@ -11,13 +11,13 @@ vec3 irradiance=vec3(0.0);
 
 vec3 irradianceColor()
 {
+	vec3 N=normalize(localPos);
 	vec3 up=vec3(0,1.0,0);
-	vec3 right=normalize(cross(up,Normal));
-	up=normalize(cross(Normal,right));
-	vec3 N=normalize(Normal)
-
-	float sampleDelta=1.0/40;
-	float nrSamples=0.0;
+	vec3 right=normalize(cross(up,N));
+	up=normalize(cross(N,right));
+	
+	float sampleDelta=0.025f;
+	float nrSamples=0.0f;
 
 	for(float phi=0.0;phi<2*PI;phi+=sampleDelta)
 	{
@@ -32,8 +32,6 @@ vec3 irradianceColor()
 	irradiance=PI*irradiance*(1.0/float(nrSamples));
 	return irradiance;
 }
-
-
 
 void main()
 {

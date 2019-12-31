@@ -48,6 +48,7 @@ GLuint GLRender::render()
 {
 	renderShadow();
 	mEnvmap.createCubemapTexture();
+	mEnvmap.createIrradianceTexture();
 	glBindFramebuffer(GL_FRAMEBUFFER, mFBO);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	glViewport(0, 0, 800, 600);
@@ -94,12 +95,14 @@ void GLRender::renderObject()
 
 	glViewport(0, 0, 800, 600);
 	
-	glClearColor(0.1f, 0.1f, 0.3f, 1.0f);
+	glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
 
 	glActiveTexture(GL_TEXTURE0);
 	glBindTexture(GL_TEXTURE_2D, mShadowmap.getTexture());
 	glActiveTexture(GL_TEXTURE1);
 	glBindTexture(GL_TEXTURE_2D, 1);
+	glActiveTexture(GL_TEXTURE2);
+	mEnvmap.bindIrradianceTexture();
 
 	mObjShader->use();
 	mObjShader->setMat4f("M", model);
@@ -147,6 +150,7 @@ void GLRender::initShader()
 	mObjShader->use();
 	mObjShader->setInt("shadowmap", 0);
 	mObjShader->setInt("texImage", 1);
+	mObjShader->setInt("envmap", 2);
 
 	mShadowShader = new ShaderProgram("bin/shader/shadowmap_vert.glsl", "bin/shader/shadowmap_frag.glsl");
 	mBgShader = new ShaderProgram("bin/shader/envmap_vert.glsl", "bin/shader/envmap_frag.glsl");
@@ -162,7 +166,7 @@ void GLRender::initShader()
 	};
 
 	mEnvmap.load(imgNames);
-	mEnvmap.load("bin/envmap/envmap.jpg");
+	mEnvmap.load("bin/envmap/00362.hdr");
 }
 
 void GLRender::initVAO()

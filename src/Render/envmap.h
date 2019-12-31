@@ -24,6 +24,7 @@ public:
 	void bindCubeTexture();
 	void bindImageTexture();
 	void bindCreateCubeTexture();
+	void bindIrradianceTexture();
 
 	void createCubemapTexture();
 
@@ -35,7 +36,10 @@ private:
 	GLuint mImageTexture;
 	GLuint mIrradianceTexture;
 
+	GLuint mRBO;
+
 	VAO* mVao;
 	GLuint mFBO;
 	ShaderProgram* mCubeProgram;
+	ShaderProgram* mIrrProgram;
 };
