@@ -1,7 +1,6 @@
 #include "render.h"
 #include "importer.h"
 #include "shadowmap.h"
-#include "camera.h"
 
 #include "stb_image.h"
 
@@ -30,6 +29,7 @@ GLRender::GLRender()
 
 	initShader();
 	initVAO();
+	initParams();
 }
 
 GLRender::~GLRender()
@@ -37,6 +37,7 @@ GLRender::~GLRender()
 	delete mObjShader;
 	delete mShadowShader;
 	delete mBgShader;
+	delete mCamera;
 }
 
 GLuint GLRender::getTexture()
@@ -65,15 +66,12 @@ void GLRender::renderGBuffer()
 
 void GLRender::renderBackground()
 {
-	Camera cam(glm::vec3(0, 0, 10.f), glm::vec3(0, 0, 0), glm::vec3(0, 1.f, 0));
-	glm::mat4 view = glm::mat4(glm::mat3(cam.getViewMat()));
-	glm::mat4 proj = cam.getProjMat(45.f, 800.f / 600.f, 0.1f, 100.f);
 	glDepthMask(GL_FALSE);
 	mBgShader->use();
 	glActiveTexture(GL_TEXTURE0);
 	mEnvmap.bindCreateCubeTexture();
-	mBgShader->setMat4f("V", view);
-	mBgShader->setMat4f("P", proj);
+	mBgShader->setMat4f("V", mParam.V);
+	mBgShader->setMat4f("P", mParam.P);
 	mBgVAO->draw();
 	mBgShader->release();
 	glDepthMask(GL_TRUE);
@@ -81,13 +79,12 @@ void GLRender::renderBackground()
 
 void GLRender::renderObject()
 {
-	Camera cam(glm::vec3(0, 0, 10.f), glm::vec3(0, 0, 0), glm::vec3(0, 1.f, 0));
 	glm::mat4 model, view, proj;
 	model = glm::translate(model, glm::vec3(0, -3.f, 0));
 	model = glm::scale(model, glm::vec3(0.3f));
 	model = glm::rotate(model, 10.f, glm::vec3(0, 1.f, 0.f));
-	view = cam.getViewMat();
-	proj = cam.getProjMat(45.f, 800.f / 600.f, 0.1f, 100.f);
+	view = mParam.V;
+	proj = mParam.P;
 
 	GLfloat near_plane = 1.0f, far_plane = 7.5f;
 	glm::mat4 shadowProj = glm::ortho(-10.0f, 10.0f, -10.0f, 10.0f, near_plane, far_plane);
@@ -111,7 +108,7 @@ void GLRender::renderObject()
 	mObjShader->setMat4f("lightV", shadowView);
 	mObjShader->setMat4f("lightP", shadowProj);
 	mObjShader->setVec3("lightDir", glm::vec3(-2.0f, 4.0f, 1.0f));
-	mObjShader->setVec3("viewPos", cam.getPos());
+	mObjShader->setVec3("viewPos", mCamera->getPos());
 	for (int i = 0; i < mVAOs.size(); i++)
 	{
 		mVAOs[i]->draw();
@@ -200,4 +197,11 @@ void GLRender::initVAO()
 		tmpVAO->create(bunnyMeshes[i]);
 		mVAOs.push_back(tmpVAO);
 	}
+}
+
+void GLRender::initParams()
+{
+	mCamera = new Camera(glm::vec3(0, 0, 10.f), glm::vec3(0, 0, 0), glm::vec3(0, 1.f, 0));
+	mParam.V = mCamera->getViewMat();
+	mParam.M = mCamera->getProjMat(45.f, 800.f / 600.f, 0.1f, 100.f);
 }

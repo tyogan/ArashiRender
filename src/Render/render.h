@@ -11,12 +11,13 @@
 #include "vao.h"
 #include "shadowmap.h"
 #include "envmap.h"
+#include "camera.h"
 
 struct Param
 {
-	glm::vec3 M;
-	glm::vec3 V;
-	glm::vec3 P;
+	glm::mat4 M;
+	glm::mat4 V;
+	glm::mat4 P;
 };
 
 class RENDER_API GLRender
@@ -38,6 +39,7 @@ public:
 private:
 	void initShader();
 	void initVAO();
+	void initParams();
 
 	ShaderProgram* mObjShader;
 	ShaderProgram* mShadowShader;
@@ -52,4 +54,7 @@ private:
 
 	GLuint mFBO;
 	GLuint mTexture;
+
+	Param mParam;
+	Camera* mCamera;
 };
