@@ -8,15 +8,11 @@ uniform mat4 M;
 uniform mat4 V;
 uniform mat4 P;
 
-uniform mat4 lightV;
-uniform mat4 lightP;
-
 out VS_OUT
 {
 	vec3 FragPos;
     vec3 Normal;
     vec2 TexCoords;
-    vec4 FragPosLightSpace;
 }vs_out;
 
 void main()
@@ -26,5 +22,4 @@ void main()
 	vs_out.FragPos=vec3(M * vec4(position, 1.0));
 	vs_out.Normal=mat3(transpose(inverse(M)))*normal;
 	vs_out.TexCoords = texCoords;
-	vs_out.FragPosLightSpace = lightP*lightV* vec4(vs_out.FragPos, 1.0);
 }

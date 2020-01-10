@@ -6,9 +6,9 @@ class RENDER_API Shadowmap
 public:
 	Shadowmap();
 	~Shadowmap();
-	void bindForDraw();
+	void bindForDraw(GLuint idx);
 	GLuint getTexture();
 private:
 	GLuint mFramebuffer;
-	GLuint mTexture;
+	GLuint mTextures;
 };

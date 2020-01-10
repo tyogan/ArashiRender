@@ -2,7 +2,7 @@
 
 out vec4 FragColor;
 
-uniform vec3 lightDir;
+
 uniform vec3 viewPos;
 
 uniform sampler2D texImage;
@@ -10,55 +10,18 @@ uniform sampler2D shadowmap;
 
 uniform samplerCube envmap;
 
-uniform vec3 albedo;
-uniform float metalic;
-uniform float roughness;
-uniform float ao;
-
 in VS_OUT {
     vec3 FragPos;
     vec3 Normal;
     vec2 TexCoords;
-    vec4 FragPosLightSpace;
 } fs_in;
 
-const float M_PI=3.1415926;
-
-vec3 fresnelSclick(float cosTheta,vec3 F0)
+layout(std140) uniform LightBlock
 {
-	return F0+(1.0-F0)*pow(1.0-cosTheta,5.0);
-}
-
-float DistributionGGX(vec3 N,vec3 H,float a)
-{
-	float a2     = a*a;
-    float NdotH  = max(dot(N, H), 0.0);
-    float NdotH2 = NdotH*NdotH;
-
-    float nom    = a2;
-    float denom  = (NdotH2 * (a2 - 1.0) + 1.0);
-    denom        = M_PI * denom * denom;
-
-    return nom / denom;
-}
-
-float GeometrySchlickGGX(float NdotV, float k)
-{
-    float nom   = NdotV;
-    float denom = NdotV * (1.0 - k) + k;
-
-    return nom / denom;
-}
-
-float GeometrySmith(vec3 N, vec3 V, vec3 L, float k)
-{
-    float NdotV = max(dot(N, V), 0.0);
-    float NdotL = max(dot(N, L), 0.0);
-    float ggx1 = GeometrySchlickGGX(NdotV, k);
-    float ggx2 = GeometrySchlickGGX(NdotL, k);
-
-    return ggx1 * ggx2;
-}
+	mat4 lightV;
+	mat4 lightP;
+	vec3 lightDir;
+};
 
 vec3 lightColor = vec3(1.0f);
 float ShadowCalculation(vec4 fragPosLightSpace)
@@ -103,7 +66,9 @@ void main()
 	float spec = pow(max(dot(halfNormal, norm), 0.0), 32);
 	vec3 specular = specularStrength * spec * lightColor;
 
-	float shadow=ShadowCalculation(fs_in.FragPosLightSpace);
+	vec4 FragPosLightSpace=lightP*lightV*vec4(fs_in.FragPos,1.0);
+
+	float shadow=ShadowCalculation(FragPosLightSpace);
 
 	vec3 result=(ambient+(1-shadow)*(diffuse+specular))*objectColor;
 	FragColor=vec4(result,1.0);

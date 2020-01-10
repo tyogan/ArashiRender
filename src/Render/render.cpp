@@ -5,25 +5,42 @@
 #include "stb_image.h"
 
 GLRender::GLRender()
+	:mCam(glm::vec3(0, 0, 10.f), glm::vec3(0, 0, 0), glm::vec3(0, 1.f, 0))
 {
 	glGenFramebuffers(1, &mFBO);
 	
 	glGenTextures(1, &mTexture);
-	glBindTexture(GL_TEXTURE_2D, mTexture);
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, 800, 600, 0, GL_RGB, GL_UNSIGNED_BYTE, NULL);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-	
+	glBindTexture(GL_TEXTURE_2D_MULTISAMPLE, mTexture);
+	glTexImage2DMultisample(GL_TEXTURE_2D_MULTISAMPLE, 4, GL_RGB, 800, 600, GL_TRUE);
+	glBindTexture(GL_TEXTURE_2D_MULTISAMPLE, 0);
+
 	glBindFramebuffer(GL_FRAMEBUFFER, mFBO);
-	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, mTexture, 0);
+	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D_MULTISAMPLE, mTexture, 0);
 	
 	unsigned int rbo;
 	glGenRenderbuffers(1, &rbo);
 	glBindRenderbuffer(GL_RENDERBUFFER, rbo);
-	glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH24_STENCIL8, 800, 600); // use a single renderbuffer object for both a depth AND stencil buffer.
+	glRenderbufferStorageMultisample(GL_RENDERBUFFER, 4, GL_DEPTH24_STENCIL8, 800, 600); 
+	glBindRenderbuffer(GL_RENDERBUFFER, 0);
 	glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER, rbo);
 	if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
 		std::cout << "ERROR::FRAMEBUFFER:: Framebuffer is not complete!" << std::endl;
+	
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+	glGenFramebuffers(1, &mImageFBO);
+
+	glGenTextures(1, &mImageTexture);
+	glBindTexture(GL_TEXTURE_2D, mImageTexture);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, 800, 600, 0, GL_RGB, GL_UNSIGNED_BYTE, NULL);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+	glBindFramebuffer(GL_FRAMEBUFFER, mImageFBO);
+	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, mImageTexture, 0);
+	
+	if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
+		std::cout << "ERROR::FRAMEBUFFER:: Intermediate framebuffer is not complete!" << std::endl;
 	
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
@@ -37,12 +54,11 @@ GLRender::~GLRender()
 	delete mObjShader;
 	delete mShadowShader;
 	delete mBgShader;
-	delete mCamera;
 }
 
 GLuint GLRender::getTexture()
 {
-	return mTexture;
+	return mImageTexture;
 }
 
 GLuint GLRender::render()
@@ -70,7 +86,7 @@ void GLRender::renderBackground()
 	mBgShader->use();
 	glActiveTexture(GL_TEXTURE0);
 	mEnvmap.bindCreateCubeTexture();
-	mBgShader->setMat4f("V", mParam.V);
+	mBgShader->setMat4f("V", glm::mat4(glm::mat3(mParam.V)));
 	mBgShader->setMat4f("P", mParam.P);
 	mBgVAO->draw();
 	mBgShader->release();
@@ -85,14 +101,8 @@ void GLRender::renderObject()
 	model = glm::rotate(model, 10.f, glm::vec3(0, 1.f, 0.f));
 	view = mParam.V;
 	proj = mParam.P;
-
-	GLfloat near_plane = 1.0f, far_plane = 7.5f;
-	glm::mat4 shadowProj = glm::ortho(-10.0f, 10.0f, -10.0f, 10.0f, near_plane, far_plane);
-	glm::mat4 shadowView = glm::lookAt(glm::vec3(-2.0f, 4.0f, 1.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
-
-	glViewport(0, 0, 800, 600);
 	
-	glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
+	glClearColor(0.1f, 0.1f, 0.2f, 1.0f);
 
 	glActiveTexture(GL_TEXTURE0);
 	glBindTexture(GL_TEXTURE_2D, mShadowmap.getTexture());
@@ -105,15 +115,16 @@ void GLRender::renderObject()
 	mObjShader->setMat4f("M", model);
 	mObjShader->setMat4f("V", view);
 	mObjShader->setMat4f("P", proj);
-	mObjShader->setMat4f("lightV", shadowView);
-	mObjShader->setMat4f("lightP", shadowProj);
-	mObjShader->setVec3("lightDir", glm::vec3(-2.0f, 4.0f, 1.0f));
-	mObjShader->setVec3("viewPos", mCamera->getPos());
+
+	mObjShader->setVec3("viewPos", mParam.pos);
 	for (int i = 0; i < mVAOs.size(); i++)
 	{
 		mVAOs[i]->draw();
 	}
 	mObjShader->release();
+	glBindFramebuffer(GL_READ_FRAMEBUFFER, mFBO);
+	glBindFramebuffer(GL_DRAW_FRAMEBUFFER, mImageFBO);
+	glBlitFramebuffer(0, 0, 800, 600, 0, 0, 800, 600, GL_COLOR_BUFFER_BIT, GL_NEAREST);
 }
 
 void GLRender::renderShadow()
@@ -148,6 +159,30 @@ void GLRender::initShader()
 	mObjShader->setInt("shadowmap", 0);
 	mObjShader->setInt("texImage", 1);
 	mObjShader->setInt("envmap", 2);
+
+	struct LightBlock
+	{
+		glm::mat4 lightV;
+		glm::mat4 lightP;
+		glm::vec3 lightDir;
+	}block;
+
+	GLfloat near_plane = 1.0f, far_plane = 7.5f;
+	glm::mat4 shadowProj = glm::ortho(-10.0f, 10.0f, -10.0f, 10.0f, near_plane, far_plane);
+	glm::mat4 shadowView = glm::lookAt(glm::vec3(-2.0f, 4.0f, 1.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+
+	block.lightV = shadowView;
+	block.lightP = shadowProj;
+	block.lightDir = glm::vec3(-2.0f, 4.0f, 1.0f);
+
+	GLuint ubo;
+	glGenBuffers(1, &ubo);
+	glBindBuffer(GL_UNIFORM_BUFFER, ubo);
+	glBufferData(GL_UNIFORM_BUFFER, sizeof(LightBlock), &block, GL_STATIC_DRAW);
+	glBindBuffer(GL_UNIFORM_BUFFER, 0);
+	glBindBufferBase(GL_UNIFORM_BUFFER, 2, ubo);
+
+	mObjShader->setUniformBlock("LightBlock", 1);
 
 	mShadowShader = new ShaderProgram("bin/shader/shadowmap_vert.glsl", "bin/shader/shadowmap_frag.glsl");
 	mBgShader = new ShaderProgram("bin/shader/envmap_vert.glsl", "bin/shader/envmap_frag.glsl");
@@ -201,7 +236,7 @@ void GLRender::initVAO()
 
 void GLRender::initParams()
 {
-	mCamera = new Camera(glm::vec3(0, 0, 10.f), glm::vec3(0, 0, 0), glm::vec3(0, 1.f, 0));
-	mParam.V = mCamera->getViewMat();
-	mParam.M = mCamera->getProjMat(45.f, 800.f / 600.f, 0.1f, 100.f);
+	mParam.V = mCam.getViewMat();
+	mParam.P = mCam.getProjMat(45.f, 800.f / 600.f, 0.1f, 100.f);
+	mParam.pos = mCam.getPos();
 }

@@ -45,6 +45,19 @@ Envmap::Envmap()
 	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 	
+	glGenTextures(1, &mPrefilterTexture);
+	glBindTexture(GL_TEXTURE_CUBE_MAP, mPrefilterTexture);
+	for (int i = 0; i < 6; i++)
+	{
+		glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, GL_RGB16F,
+			128, 128, 0, GL_RGB, GL_UNSIGNED_BYTE, nullptr);
+	}
+	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
+	glTexParameterf(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexParameterf(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
 	glGenRenderbuffers(1, &mRBO);
 
 
@@ -187,4 +200,34 @@ void Envmap::load(const vector<std::string>& imgNames)
 		glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
 	}
 	glBindTexture(GL_TEXTURE_CUBE_MAP, 0);
+}
+
+void Envmap::createPrefilterTexture()
+{
+	glBindFramebuffer(GL_FRAMEBUFFER, mFBO);
+	
+	glActiveTexture(GL_TEXTURE0);
+	glBindTexture(GL_TEXTURE_CUBE_MAP, mCubeTexture);
+
+	GLuint maxMipLevels = 5;
+	for (int mip = 0; mip < maxMipLevels; ++mip)
+	{
+		GLuint mipWidth = 128 * std::pow(0.5, mip);
+		GLuint mipHeight = 128 * std::pow(0.5, mip);
+		glBindRenderbuffer(GL_RENDERBUFFER, mRBO);
+		glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT24, mipWidth, mipHeight);
+		glViewport(0, 0, mipWidth, mipHeight);
+		
+		glViewport(0, 0, mipWidth, mipHeight);
+		float roughness = (float)mip / (float)(maxMipLevels - 1);
+
+		for (int i = 0; i < 6; i++)
+		{
+			glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0,
+				GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, mPrefilterTexture, mip);
+			glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+			mVao->draw();
+		}
+	}
+
 }

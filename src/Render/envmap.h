@@ -29,12 +29,14 @@ public:
 	void createCubemapTexture();
 
 	void createIrradianceTexture();
+	void createPrefilterTexture();
 
 private:
 	GLuint mCreateEnvCubemap;
 	GLuint mCubeTexture;
 	GLuint mImageTexture;
 	GLuint mIrradianceTexture;
+	GLuint mPrefilterTexture;
 
 	GLuint mRBO;
 

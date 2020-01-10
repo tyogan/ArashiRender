@@ -18,6 +18,13 @@ struct Param
 	glm::mat4 M;
 	glm::mat4 V;
 	glm::mat4 P;
+	glm::vec3 pos;
+};
+
+struct Lights
+{
+	glm::mat4 VP;
+	glm::vec4 pos;
 };
 
 class RENDER_API GLRender
@@ -54,7 +61,9 @@ private:
 
 	GLuint mFBO;
 	GLuint mTexture;
+	GLuint mImageFBO;
+	GLuint mImageTexture;
 
 	Param mParam;
-	Camera* mCamera;
+	Camera mCam;
 };
