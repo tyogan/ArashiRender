@@ -6,12 +6,15 @@
 #include <assimp/scene.h>
 #include <assimp/postprocess.h>
 
+#include <vector>
+
 class RENDER_API Importer
 {
 public:
-	void loadModel(char* path,vector<Mesh>& meshes);
-
+	void loadModel(const char* path);
+	std::vector<Mesh*> getMeshes()const;
 private:
-	void processNode(aiNode* node, const aiScene* scene, vector<Mesh>& meshes);
-	Mesh processMesh(aiMesh* mesh, const aiScene* scene);
+	void processNode(aiNode* node, const aiScene* scene);
+	Mesh* processMesh(aiMesh* mesh, const aiScene* scene);
+	std::vector<Mesh*> mMeshes;
 };

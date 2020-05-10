@@ -11,7 +11,7 @@ VAO::~VAO()
 	glDeleteVertexArrays(1,&mVAO);
 }
 
-void VAO::create(Mesh& mesh)
+void VAO::create(const Mesh& mesh)
 {
 	mIdxNum = mesh.getIndicesNums();
 	GLuint vbo;

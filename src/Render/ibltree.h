@@ -1,81 +1,74 @@
-#pragma once
-#include "glm/glm.hpp"
-#include <vector>
-
-#define SUBD_X_ALEX 0
-#define SUBD_Y_ALEX 1
-
-struct Sample
-{
-	glm::vec3 mPos;
-	glm::vec3 mColor;
-};
-
-struct BBox
-{
-	glm::vec2 mMax;
-	glm::vec2 mMin;
-};
-
-struct Image
-{
-	std::vector<int> mData;
-	int mWidth;
-	int mHeight;
-	int mChannel;
-};
-
-class RENDER_API IBLTree
-{
-public:
-	IBLTree(unsigned char* imageData,int width,int height,int channel);
-	~IBLTree();
-
-	class Node
-	{
-	public:
-		int mDepth;
-		int mSubdAlex;
-		glm::vec3 mColor;
-		float  mEnergy;
-		BBox mBbox;
-		Node* mpLeft;
-		Node* mpRight;
-		int mSampleNums;
-		int* mSampleIndex;
-
-		Node()
-		{
-			mDepth = 0;
-			mSubdAlex = 0;
-			mSampleNums = 0;
-			mColor = glm::vec3(0);
-			mEnergy = 0;
-			mpLeft = mpRight = nullptr;
-			mSampleIndex = nullptr;
-		}
-		~Node()
-		{
-			delete mpLeft;
-			delete mpRight;
-			delete mSampleIndex;
-		}
-	};
-
-public:
-	void buildTree(int depth);
-	Sample* wrapSamples(int sampleNums,glm::vec2* points);
-
-private:
-	void scaleImageColor();
-	void calEnergy(Node* node);
-	
-	void recursiveBuildNode(Node* node);
-	void findArea(glm::vec2* point, Node* node, Sample* samples);
-
-private:
-	Image mImage;
-	Node* mpRoot;
-	int mTreeDepth;
-	int mSampleCount;
-};
+//#pragma once
+//#define SUBD_X_AXLE 0
+//#define SUBE_Y_AXLE 1
+//
+//#define SAFE_DELETE(p)			{ if (p) delete (p);   (p) = NULL; }
+//#define SAFE_DELETE_ARRAY(p)	{ if (p) delete [](p); (p) = NULL; }
+//
+//#include <glm/glm.hpp>
+//#include "image.h"
+//
+//#include "stb_image.h"
+//#include "stb_image_write.h"
+//
+//struct CSample
+//{
+//	glm::vec2 pos;
+//	glm::vec3 color;
+//};
+//
+//struct CBBox
+//{
+//	glm::vec2 min, max;
+//};
+//
+//class IBLTree
+//{
+//public:
+//	class TNode
+//	{
+//	public:
+//		int       mSubdAxle;
+//		int       mDepth;
+//		float     mEnergy;
+//		glm::vec3 mColor;
+//		int      *mSampleIdx;
+//		int       mSampleNum;
+//		CBBox     mBBox;
+//		
+//		TNode *mLeft, *mRight;
+//		TNode()
+//		{
+//			mSubdAxle = mDepth = 0;
+//			mEnergy = 0.f;
+//			mColor = glm::vec3(0.f);
+//			mSampleIdx = NULL;
+//			mSampleNum = 0;
+//			mLeft = mRight = NULL;
+//		}
+//		~TNode()
+//		{
+//			SAFE_DELETE(mLeft);
+//			SAFE_DELETE(mRight);
+//			SAFE_DELETE(mSampleIdx);
+//		}
+//	};
+//
+//public:
+//	IBLTree(int nDepth, Image<float> image);
+//	~IBLTree(void);
+//	CSample *sampleWraping(int nSamples, glm::vec2 *pInputPos);
+//
+//private:
+//	void BuildTree(int nDepth);
+//	void RetreveNodeEnergy(TNode *pNode);
+//	void RecursiveSubdivision(TNode *pNode);
+//	void ImageColorScale(Image<float> &image);
+//
+//	void RecursiveWarping(TNode *pNode, glm::vec2 *pPoints, CSample *pSample);
+//private:
+//	Image<float> mImage;
+//	TNode *mRoot;
+//	int    mTreeDepth;
+//	int    mGlobalIndex;
+//};

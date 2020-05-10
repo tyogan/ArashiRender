@@ -1,22 +1,30 @@
 #pragma once
-
 #include "glad/glad.h"
 #include <GLFW/glfw3.h>
-
 #include <iostream>
+
+#include "shader.h"
+#include "vao.h"
+#include "camera.h"
+#include "shadowmap.h"
+#include "mesh.h"
+#include "importer.h"
+#include "render.h"
+
+#include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtc/type_ptr.hpp>
+
+#include "stb_image.h"
 
 class RENDER_API MainWindow
 {
 public:
 	MainWindow(int width, int height);
 	~MainWindow();
-	void show();
-
+	int init();
+	void showImage();
 private:
-	GLuint genTexture(std::string path);
-	void genFrameTexture(GLuint& frameId,GLuint& id);
-	void genShadowmap(GLuint& frameId, GLuint& id);
-
-private:
-	GLFWwindow* m_pWindow;
+	int mWidth, mHeight;
+	GLFWwindow* mWindow;
 };

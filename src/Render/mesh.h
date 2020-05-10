@@ -17,12 +17,12 @@ struct Vertex
 class RENDER_API Mesh
 {
 public:
-	static Mesh createCube();
-	static Mesh createSphere(float radius, unsigned int sectorCount, unsigned int stackCount);
-	static Mesh createPlane();   
+	static Mesh* createCube();
+	static Mesh* createSphere(float radius, unsigned int sectorCount, unsigned int stackCount);
+	static Mesh* createPlane();   
 
-	unsigned int getIndicesNums();
-	unsigned int getVertexNums();
+	unsigned int getIndicesNums()const;
+	unsigned int getVertexNums()const;
 
 public:
 	vector<Vertex> mVertices;

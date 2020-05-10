@@ -7,25 +7,11 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
 
-#include "shader.h"
-#include "vao.h"
+#include "scene.h"
 #include "shadowmap.h"
 #include "envmap.h"
-#include "camera.h"
 
-struct Param
-{
-	glm::mat4 M;
-	glm::mat4 V;
-	glm::mat4 P;
-	glm::vec3 pos;
-};
-
-struct Lights
-{
-	glm::mat4 VP;
-	glm::vec4 pos;
-};
+#include "ibltree.h"
 
 class RENDER_API GLRender
 {
@@ -39,31 +25,16 @@ public:
 	void renderObject();
 	void renderShadow();
 
-	void renderGBuffer();
-
 	GLuint getTexture();
 
 private:
-	void initShader();
-	void initVAO();
-	void initParams();
-
-	ShaderProgram* mObjShader;
-	ShaderProgram* mShadowShader;
-	ShaderProgram* mBgShader;
-	ShaderProgram* mCubeShader;
+	void initFBO();
 
 	Shadowmap mShadowmap;
 	Envmap mEnvmap;
 private:
-	vector<VAO*> mVAOs;
-	VAO* mBgVAO;
+	Scene mScene;
 
 	GLuint mFBO;
 	GLuint mTexture;
-	GLuint mImageFBO;
-	GLuint mImageTexture;
-
-	Param mParam;
-	Camera mCam;
 };

@@ -1,205 +1,221 @@
-#include "ibltree.h"
-
-IBLTree::IBLTree(unsigned char* imageData, int width, int height, int channel)
-{
-	mImage.mWidth = width;
-	mImage.mHeight = height;
-	mImage.mChannel = channel;
-	memcpy(mImage.mData.data(), imageData, width*height*channel);
-}
-
-IBLTree::~IBLTree()
-{
-	delete mpRoot;
-}
-
-void IBLTree::calEnergy(Node* node)
-{
-
-	for (int i = node->mBbox.mMin.x; i < node->mBbox.mMax.x; i++)
-	{
-		for (int j = node->mBbox.mMin.y; j < node->mBbox.mMax.y; j++)
-		{
-			node->mColor += mImage.mData[i*mImage.mWidth + j];
-		}
-	}
-	node->mEnergy = 
-		node->mColor.r * 0.212671f +
-		node->mColor.g * 0.715160f +
-		node->mColor.b * 0.072169f;
-}
-
-void IBLTree::buildTree(int depth)
-{
-	if (depth < 0 || mImage.mWidth < 0 || mImage.mHeight < 0) return;
-	mpRoot = new Node();
-	mpRoot->mBbox.mMin = glm::vec2(0, 0);
-	mpRoot->mBbox.mMax = glm::vec2(mImage.mWidth, mImage.mHeight);
-	mpRoot->mSubdAlex = SUBD_X_ALEX;
-	mpRoot->mDepth = 1;
-
-	mTreeDepth = depth;
-
-}
-
-void IBLTree::recursiveBuildNode(Node* node)
-{
-	if (node->mDepth == mTreeDepth)
-	{
-		calEnergy(node);
-		return;
-	}
-	node->mpLeft = new Node();
-	
-	node->mpLeft->mDepth = node->mDepth += 1;
-	if (node->mSubdAlex == SUBD_X_ALEX)
-	{
-		node->mpLeft->mBbox.mMin = node->mBbox.mMin;
-		node->mpLeft->mBbox.mMax.x = node->mBbox.mMax.x / 2.0;
-		node->mpLeft->mBbox.mMax.y = node->mBbox.mMax.y;
-		node->mpLeft->mSubdAlex = SUBD_Y_ALEX;
-	}
-	else {
-		node->mpLeft->mSubdAlex = SUBD_X_ALEX;
-	}
-
-	node->mpRight = new Node();
-
-	recursiveBuildNode(node->mpLeft);
-	recursiveBuildNode(node->mpLeft);
-
-	node->mColor = node->mpLeft->mColor + node->mpRight->mColor;
-	node->mEnergy = node->mpLeft->mEnergy + node->mpRight->mEnergy;
-}
-
-Sample* IBLTree::wrapSamples(int sampleNums, glm::vec2* pointsInput)
-{
-	Sample* samples = new Sample[sampleNums];
-	glm::vec2* pPoints = new glm::vec2[sampleNums];
-	mpRoot->mSampleNums = sampleNums;
-	mpRoot->mSampleIndex = new int[sampleNums];
-	
-	mSampleCount = sampleNums;
-
-	memcpy(pPoints, pointsInput, sizeof(glm::vec2)*sampleNums);
-
-	for (int i = 0; i < sampleNums; i++)
-	{
-		mpRoot->mSampleIndex[i] = i;
-	}
-
-	findArea(pPoints, mpRoot, samples);
-
-	delete[]pPoints;
-	return samples;
-}
-
-void IBLTree::findArea(glm::vec2* points,Node* node,Sample* samples)
-{
-	if (node->mDepth == mTreeDepth||node->mSampleNums==1)
-	{
-		float fScale = node->mSampleNums > 1 ? 1.0 / node->mSampleNums : 1.0;
-		glm::vec3 color = node->mColor*fScale;
-		for (int i = 0; i < node->mSampleNums; ++i)
-		{
-			glm::vec2 poi = points[node->mSampleIndex[i]];
-			Sample& s = samples[mSampleCount];
-
-			s.mPos.x= node->mBbox.mMin.x + poi.x*(node->mBbox.mMax.x - node->mBbox.mMin.x);
-			s.mPos.y = node->mBbox.mMin.y + poi.y*(node->mBbox.mMax.y - node->mBbox.mMin.y);
-			s.mColor = color;
-		}
-		return;
-	}
-
-	float left = node->mpLeft->mEnergy / node->mEnergy;
-	int* arrLeft = new int[node->mSampleNums];
-	int* arrRight = new int[node->mSampleNums];
-	int leftNum = 0;
-	int rightNum = 0;
-
-		
-	if (node->mSubdAlex == SUBD_X_ALEX)
-	{
-		for (int i = 0; i < node->mSampleNums; i++)
-		{
-			glm::vec2& p = points[node->mSampleIndex[i]];
-			if (p.x < left)
-			{
-				arrLeft[leftNum++] = node->mSampleIndex[i];
-				p.x /= left;
-			}
-			else {
-				arrRight[rightNum++] = node->mSampleIndex[i];
-				p.x = (p.x - left) / (1.0 - left);
-			}
-		}
-	}
-	else {
-		for (int i = 0; i < node->mSampleNums; i++)
-		{
-			glm::vec2& p = points[node->mSampleIndex[i]];
-			if (p.y < left)
-			{
-				arrLeft[leftNum++] = node->mSampleIndex[i];
-				p.y /= left;
-			}
-			else {
-				arrRight[rightNum++] = node->mSampleIndex[i];
-				p.y = (p.y - left) / (1.0 - left);
-			}
-		}
-	}
-	delete node->mSampleIndex;
-	if (leftNum)
-	{
-		node->mpLeft->mSampleNums = leftNum;
-		node->mpLeft->mSampleIndex = new int[leftNum];
-		memcpy(node->mpLeft->mSampleIndex, arrLeft, sizeof(int)*leftNum);
-	}
-	if (rightNum)
-	{
-		node->mpRight->mSampleNums = rightNum;
-		node->mpRight->mSampleIndex = new int[rightNum];
-		memcpy(node->mpRight->mSampleIndex, arrRight, sizeof(int)*rightNum);
-	}
-	delete [] arrLeft;
-	delete [] arrRight;
-	if (leftNum) findArea(points, node->mpLeft, samples);
-	if (rightNum) findArea(points, node->mpRight, samples);
-}
-
-void IBLTree::scaleImageColor()
-{
-#ifndef M_PI
-#define M_PI 3.1415926
-#endif // !M_PI
-
-	int Width = mImage.mWidth;
-	int Height = mImage.mHeight;
-
-	float* fpFactor = new float[Height];
-	int halfHeight = Height / 2;
-	int sumScale = 0.0;
-	for (int i = 0; i <= halfHeight; i++)
-	{
-		fpFactor[i] = fpFactor[Height - 1 - i] = cos((1.0 - (i + 0.5) / halfHeight)*M_PI*0.5f);
-		sumScale += fpFactor[i];
-	}
-
-	sumScale = 4 * M_PI / (Width * sumScale * 2);
-	for (int i = 0; i <= halfHeight; i++)
-	{
-		fpFactor[i] *= sumScale;
-	}
-
-	for (int j = 0; j < Height; j++)
-	{
-		for (int i = 0; i < Width; i++)
-		{
-			mImage.mData[i*mImage.mWidth + j] *= fpFactor[j];
-		}
-	}
-	delete []fpFactor;
-}
-
+//#include "ibltree.h"
+//
+//IBLTree::IBLTree(int nDepth, Image<float> image)
+//{
+//	mRoot = NULL;
+//	mImage = image;
+//	ImageColorScale(mImage);
+//	BuildTree(nDepth);
+//}
+//
+//IBLTree::~IBLTree()
+//{
+//	SAFE_DELETE(mRoot);
+//}
+//
+//void IBLTree::ImageColorScale(Image<float> &image)
+//{
+//	int Height = image.height;
+//	int Width = image.width;
+//	float *fpFactor = new float[Height];
+//	float fHeight = Height / 2.f;
+//	float fAreaSalar = 0.f;
+//	for (int y = 0; y < Height / 2; y++)
+//	{
+//		fpFactor[y] = fpFactor[Height - 1 - y] = cos((1.f - (y + .5f) / fHeight) * 1.570795f);
+//		fAreaSalar += fpFactor[y];
+//	}
+//	fAreaSalar = 4 * 3.1415926f / (fAreaSalar * 2 * Width);
+//	for (int y = 0; y < Height; y++)
+//	{
+//		fpFactor[y] *= fAreaSalar;
+//	}
+//
+//	for (int y = 0; y < Height; y++)
+//	{
+//		for (int x = 0; x < Width; x++)
+//		{
+//			mImage(x, y, 0) *= fpFactor[y];
+//			mImage(x, y, 1) *= fpFactor[y];
+//			mImage(x, y, 2) *= fpFactor[y];
+//		}
+//	}
+//
+//	delete[] fpFactor;
+//}
+//
+//void IBLTree::BuildTree(int nDepth)
+//{
+//	if (nDepth <= 0 || mImage.width <= 0 || mImage.height <= 0)
+//	{
+//		return;
+//	}
+//	
+//	mTreeDepth = nDepth;
+//	mRoot = new TNode;
+//	mRoot->mDepth = 1;
+//	mRoot->mBBox.min.x = mRoot->mBBox.min.y = 0.f;
+//	mRoot->mBBox.max.x = mRoot->mBBox.max.y = 1.f;
+//	mRoot->mSubdAxle = SUBD_X_AXLE;
+//	
+//	RecursiveSubdivision(mRoot);
+//}
+//
+//void IBLTree::RecursiveSubdivision(TNode *pNode)
+//{
+//	if (pNode->mDepth == mTreeDepth)
+//	{
+//		RetreveNodeEnergy(pNode);
+//		return;
+//	}
+//
+//	pNode->mLeft = new TNode;
+//	pNode ->mRight = new TNode;
+//	
+//	pNode->mLeft->mDepth = pNode->mRight->mDepth = pNode->mDepth + 1;
+//	pNode->mLeft->mSubdAxle = pNode->mRight->mSubdAxle =
+//		(pNode->mSubdAxle == SUBD_X_AXLE) ? SUBE_Y_AXLE : SUBD_X_AXLE;
+//	pNode->mLeft->mBBox = pNode->mRight->mBBox = pNode->mBBox;
+//	if (pNode->mSubdAxle == SUBD_X_AXLE)
+//	{
+//		pNode->mLeft->mBBox.max.x = pNode->mRight->mBBox.min.x =
+//			(pNode->mBBox.max.x + pNode->mBBox.min.x)*.5f;
+//	}
+//	else {
+//		pNode->mLeft->mBBox.max.y = pNode->mRight->mBBox.min.y =
+//			(pNode->mBBox.max.y + pNode->mBBox.min.y)*.5f;
+//	}
+//
+//	RecursiveSubdivision(pNode->mLeft);
+//	RecursiveSubdivision(pNode->mRight);
+//
+//	pNode->mColor = pNode->mLeft->mColor + pNode->mRight->mColor;
+//	pNode->mEnergy = pNode->mLeft->mEnergy + pNode->mRight->mEnergy;
+//}
+//
+//void IBLTree::RetreveNodeEnergy(TNode *pNode)
+//{
+//	int nX0 = (int)(pNode->mBBox.min.x*mImage.width + .5f);
+//	int nX1 = (int)(pNode->mBBox.max.x*mImage.width + .5f);
+//	int nY0 = (int)(pNode->mBBox.min.y*mImage.height + .5f);
+//	int nY1 = (int)(pNode->mBBox.max.y*mImage.height + .5f);
+//
+//	pNode->mColor = glm::vec3(0.f);
+//	for (int x = nX0; x < nX1; x++)
+//	{
+//		for (int y = nY0; y < nY1; y++)
+//		{
+//			glm::vec3 color = glm::vec3(mImage(x, y, 0), mImage(x, y, 1), mImage(x, y, 2));
+//			pNode->mColor += color;
+//		}
+//	}
+//	pNode->mEnergy=
+//		pNode->mColor.r * 0.212671f +
+//		pNode->mColor.g * 0.715160f +
+//		pNode->mColor.b * 0.072169f;
+//}
+//
+//CSample *IBLTree::sampleWraping(int nSamples, glm::vec2 *pInputPos)
+//{
+//	if (nSamples <= 0 || pInputPos == NULL)
+//	{
+//		return NULL;
+//	}
+//
+//	glm::vec2 *lpPoints = new glm::vec2[nSamples];
+//	CSample *lpSample = new CSample[nSamples];
+//	mRoot->mSampleIdx = new int[nSamples];
+//	mRoot->mSampleNum = nSamples;
+//	for (int i = 0; i < nSamples; i++)
+//	{
+//		mRoot->mSampleIdx[i] = i;
+//	}
+//
+//	memcpy(lpPoints, pInputPos, sizeof(glm::vec2)*nSamples);
+//
+//	mGlobalIndex = 0;
+//	RecursiveWarping(mRoot, lpPoints, lpSample);
+//
+//
+//	delete [] lpPoints;
+//	return lpSample;
+//}
+//
+//void IBLTree::RecursiveWarping(TNode *pNode, glm::vec2 *pPos, CSample *pSample)
+//{
+//	if (pNode->mSampleNum == 1 || pNode->mLeft == NULL)
+//	{
+//		glm::vec3 color;
+//		float fScale = (pNode->mSampleNum > 1) ? 1.f / pNode->mSampleNum : 1.f;
+//		color = pNode->mColor*fScale;
+//
+//		for (int i = 0; i < pNode->mSampleNum; i++)
+//		{
+//			glm::vec2 lPos= pPos[pNode->mSampleIdx[i]];
+//			CSample *lpSamp = &pSample[mGlobalIndex++];
+//			lpSamp->pos.x = pNode->mBBox.min.x +
+//				(pNode->mBBox.max.x - pNode->mBBox.min.x)*lPos.x;
+//			lpSamp->pos.y = pNode->mBBox.min.y +
+//				(pNode->mBBox.max.y - pNode->mBBox.min.y)*lPos.y;
+//			lpSamp->color = color;
+//		}
+//		return;
+//	}
+//
+//	float fSubd = pNode->mLeft->mEnergy / pNode->mEnergy;
+//	int *npLeft = new int[pNode->mSampleNum];
+//	int *npRight = new int[pNode->mSampleNum];
+//	int nLeft = 0;
+//	int nRight = 0;
+//	if (pNode->mSubdAxle == SUBD_X_AXLE)
+//	{
+//		for (int i = 0; i < pNode->mSampleNum; i++)
+//		{
+//			int k = pNode->mSampleIdx[i];
+//			glm::vec2 *lpPos = pPos + k;
+//			if (lpPos->x < fSubd)
+//			{
+//				npLeft[nLeft++] = pNode->mSampleIdx[i];
+//				lpPos->x /= fSubd;
+//			}
+//			else {
+//				npRight[nRight++] = pNode->mSampleIdx[i];
+//				lpPos->x = (lpPos->x - fSubd) / (1.f - fSubd);
+//			}
+//		}
+//	}
+//	else {
+//		for (int i = 0; i < pNode->mSampleNum; i++)
+//		{
+//			glm::vec2 *lpPos = pPos + pNode->mSampleIdx[i];
+//			if (lpPos->y < fSubd)
+//			{
+//				npLeft[nLeft++] = pNode->mSampleIdx[i];
+//				lpPos->y /= fSubd;
+//			}
+//			else {
+//				npRight[nRight++] = pNode->mSampleIdx[i];
+//				lpPos->y = (lpPos->y - fSubd) / (1 - fSubd);
+//			}
+//
+//		}
+//	}
+//
+//	SAFE_DELETE_ARRAY(pNode->mSampleIdx);
+//	if (nLeft)
+//	{
+//		pNode->mLeft->mSampleIdx = new int[nLeft];
+//		memcpy(pNode->mLeft->mSampleIdx, npLeft, sizeof(int) * nLeft);
+//		pNode->mLeft->mSampleNum = nLeft;
+//	}
+//	if (nRight)
+//	{
+//		pNode->mRight->mSampleIdx = new int[nRight];
+//		memcpy(pNode->mRight->mSampleIdx, npRight, sizeof(int)*nRight);
+//		pNode->mRight->mSampleNum = nRight;
+//	}
+//	SAFE_DELETE_ARRAY(npLeft);
+//	SAFE_DELETE_ARRAY(npRight);
+//	if (nLeft) RecursiveWarping(pNode->mLeft, pPos, pSample);
+//	if (nRight) RecursiveWarping(pNode->mRight, pPos, pSample);
+//}

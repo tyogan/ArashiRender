@@ -1,13 +1,13 @@
 #include "mesh.h"
 #include "vertex.h"
 
-Mesh Mesh::createSphere(float radius, unsigned int sectorCount, unsigned int stackCount)
+Mesh* Mesh::createSphere(float radius, unsigned int sectorCount, unsigned int stackCount)
 {
 #ifndef M_PI
 #define M_PI (3.14159265358979323846)
 #endif
 
-	Mesh m;
+	Mesh* m = new Mesh();
 	Vertex vert;
 	float sectorStep = 2 * M_PI / sectorCount;
 	float stackStep = M_PI / stackCount;
@@ -39,7 +39,7 @@ Mesh Mesh::createSphere(float radius, unsigned int sectorCount, unsigned int sta
 			float t = (float)i / stackCount * 180;
 			vert.mTexCoords.x = s;
 			vert.mTexCoords.y = t;
-			m.mVertices.push_back(vert);
+			m->mVertices.push_back(vert);
 		}
 	}
 
@@ -51,26 +51,25 @@ Mesh Mesh::createSphere(float radius, unsigned int sectorCount, unsigned int sta
 		{
 			if (i != 0)
 			{
-				m.mIndices.push_back(k1);
-				m.mIndices.push_back(k2);
-				m.mIndices.push_back(k1 + 1);
+				m->mIndices.push_back(k1);
+				m->mIndices.push_back(k2);
+				m->mIndices.push_back(k1 + 1);
 			}
 
 			if (i != (stackCount - 1))
 			{
-				m.mIndices.push_back(k1 + 1);
-				m.mIndices.push_back(k2);
-				m.mIndices.push_back(k2 + 1);
+				m->mIndices.push_back(k1 + 1);
+				m->mIndices.push_back(k2);
+				m->mIndices.push_back(k2 + 1);
 			}
 		}
 	}
-
 	return m;
 }
 
-Mesh Mesh::createPlane()
+Mesh* Mesh::createPlane()
 {
-	Mesh m;
+	Mesh* m = new Mesh();
 	Vertex vert;
 	for (unsigned int i = 0; i < sizeof(planeVertices) / sizeof(float); i += 8)
 	{
@@ -84,20 +83,20 @@ Mesh Mesh::createPlane()
 
 		vert.mTexCoords.x = planeVertices[i + 6];
 		vert.mTexCoords.y = planeVertices[i + 7];
-		m.mVertices.push_back(vert);
+		m->mVertices.push_back(vert);
 	}
 	
 	for (unsigned int i = 0; i < sizeof(planeIndices) / sizeof(unsigned int); i++)
 	{
-		m.mIndices.push_back(planeIndices[i]);
+		m->mIndices.push_back(planeIndices[i]);
 	}
 
 	return m;
 }
 
-Mesh Mesh::createCube()
+Mesh* Mesh::createCube()
 {
-	Mesh m;
+	Mesh* m = new Mesh();
 	Vertex vert;
 	for (unsigned int i = 0; i < sizeof(cubeVertices) / sizeof(float); i += 8)
 	{
@@ -111,23 +110,23 @@ Mesh Mesh::createCube()
 
 		vert.mTexCoords.x = cubeVertices[i + 6];
 		vert.mTexCoords.y = cubeVertices[i + 7];
-		m.mVertices.push_back(vert);
+		m->mVertices.push_back(vert);
 	}
 
 	for (unsigned int i = 0; i < sizeof(cubeIndices) / sizeof(unsigned int); i++)
 	{
-		m.mIndices.push_back(cubeIndices[i]);
+		m->mIndices.push_back(cubeIndices[i]);
 	}
 
 	return m;
 }
 
-unsigned int Mesh::getIndicesNums()
+unsigned int Mesh::getIndicesNums()const
 {
 	return mIndices.size();
 }
 
-unsigned int Mesh::getVertexNums()
+unsigned int Mesh::getVertexNums()const
 {
 	return mVertices.size();
 }

@@ -2,26 +2,18 @@
 
 out vec4 FragColor;
 
-
+uniform vec3 lightDir;
 uniform vec3 viewPos;
 
 uniform sampler2D texImage;
 uniform sampler2D shadowmap;
 
-uniform samplerCube envmap;
-
 in VS_OUT {
     vec3 FragPos;
     vec3 Normal;
     vec2 TexCoords;
+    vec4 FragPosLightSpace;
 } fs_in;
-
-layout(std140) uniform LightBlock
-{
-	mat4 lightV;
-	mat4 lightP;
-	vec3 lightDir;
-};
 
 vec3 lightColor = vec3(1.0f);
 float ShadowCalculation(vec4 fragPosLightSpace)
@@ -49,11 +41,10 @@ float ShadowCalculation(vec4 fragPosLightSpace)
 
 void main()
 {	
-	//vec3 objectColor=vec3(texture(texImage,fs_in.TexCoords));
 	vec3 objectColor=vec3(0.8);
-	float ambientStrenth=0.5;
-	vec3 ambient= vec3(texture(envmap,fs_in.Normal));
-	ambient=lightColor*ambientStrenth;
+	float ambientStrenth=0.1;
+	vec3 ambient=ambientStrenth*lightColor;
+
 	vec3 lightDirN=normalize(lightDir);
 	vec3 norm=normalize(fs_in.Normal);
 	vec3 diffuse = lightColor*max(dot(norm, lightDirN), 0.0);
@@ -66,9 +57,7 @@ void main()
 	float spec = pow(max(dot(halfNormal, norm), 0.0), 32);
 	vec3 specular = specularStrength * spec * lightColor;
 
-	vec4 FragPosLightSpace=lightP*lightV*vec4(fs_in.FragPos,1.0);
-
-	float shadow=ShadowCalculation(FragPosLightSpace);
+	float shadow=ShadowCalculation(fs_in.FragPosLightSpace);
 
 	vec3 result=(ambient+(1-shadow)*(diffuse+specular))*objectColor;
 	FragColor=vec4(result,1.0);

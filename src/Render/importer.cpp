@@ -1,7 +1,7 @@
 #include "importer.h"
 #include <iostream>
 
-void Importer::loadModel(char* path, vector<Mesh>& meshes)
+void Importer::loadModel(const char* path)
 {
 	Assimp::Importer import;
 	const aiScene* scene = import.ReadFile(path, aiProcess_Triangulate | aiProcess_FlipUVs);
@@ -10,25 +10,25 @@ void Importer::loadModel(char* path, vector<Mesh>& meshes)
 		std::cout << "ERROR::ASSIMP::" << import.GetErrorString() << std::endl;
 		return;
 	}
-	processNode(scene->mRootNode, scene, meshes);
+	processNode(scene->mRootNode, scene);
 }
 
-void Importer::processNode(aiNode* node, const aiScene* scene, vector<Mesh>& meshes)
+void Importer::processNode(aiNode* node, const aiScene* scene)
 {
 	for (unsigned int i = 0; i < node->mNumMeshes; i++)
 	{
 		aiMesh* mesh = scene->mMeshes[node->mMeshes[i]];
-		meshes.push_back(processMesh(mesh, scene));
+		mMeshes.push_back(processMesh(mesh, scene));
 	}
 	for (unsigned int i = 0; i < node->mNumChildren; i++)
 	{
-		processNode(node->mChildren[i], scene, meshes);
+		processNode(node->mChildren[i], scene);
 	}
 }
 
-Mesh Importer::processMesh(aiMesh* mesh, const aiScene* scene)
+Mesh* Importer::processMesh(aiMesh* mesh, const aiScene* scene)
 {
-	Mesh m;
+	Mesh* m=new Mesh();
 
 	for (unsigned int i = 0; i < mesh->mNumVertices; i++)
 	{
@@ -51,7 +51,7 @@ Mesh Importer::processMesh(aiMesh* mesh, const aiScene* scene)
 		else {
 			vertex.mTexCoords = glm::vec2(0.f, 0.f);
 		}
-		m.mVertices.push_back(vertex);
+		m->mVertices.push_back(vertex);
 	}
 
 	for (unsigned int i = 0; i < mesh->mNumFaces; i++)
@@ -59,9 +59,14 @@ Mesh Importer::processMesh(aiMesh* mesh, const aiScene* scene)
 		aiFace face = mesh->mFaces[i];
 		for (unsigned int j = 0; j < face.mNumIndices; j++)
 		{
-			m.mIndices.push_back(face.mIndices[j]);
+			m->mIndices.push_back(face.mIndices[j]);
 		}
 	}
 	
 	return m;
+}
+
+std::vector<Mesh*> Importer::getMeshes()const
+{
+	return mMeshes;
 }

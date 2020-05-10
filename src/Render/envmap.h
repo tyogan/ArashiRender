@@ -11,6 +11,7 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
 #include "shader.h"
+#include "object.h"
 
 #include "vao.h"
 
@@ -21,26 +22,26 @@ public:
 	~Envmap();
 	void load(std::string path);
 	void load(const std::vector<std::string>& imgNames);
-	void bindCubeTexture();
 	void bindImageTexture();
+	void bindCubeTexture();
 	void bindCreateCubeTexture();
-	void bindIrradianceTexture();
 
 	void createCubemapTexture();
 
 	void createIrradianceTexture();
-	void createPrefilterTexture();
 
 private:
+	void initFBO();
+
+	GLuint mImageTexture;
 	GLuint mCreateEnvCubemap;
 	GLuint mCubeTexture;
-	GLuint mImageTexture;
+
 	GLuint mIrradianceTexture;
-	GLuint mPrefilterTexture;
 
 	GLuint mRBO;
 
-	VAO* mVao;
+	Object* mObject;
 	GLuint mFBO;
 	ShaderProgram* mCubeProgram;
 	ShaderProgram* mIrrProgram;

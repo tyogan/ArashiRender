@@ -9,7 +9,7 @@ public:
 	VAO();
 	~VAO();
 
-	void create(Mesh& mesh);
+	void create(const Mesh& mesh);
 	void draw();
 private:
 	GLuint mVAO;

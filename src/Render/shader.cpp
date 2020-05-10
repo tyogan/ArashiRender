@@ -93,7 +93,3 @@ void  ShaderProgram::setVec3(const std::string &name, glm::vec3 v) const
 {
 	glUniform3fv(glGetUniformLocation(m_ID, name.c_str()), 1, glm::value_ptr(v));
 }
-void ShaderProgram::setUniformBlock(const std::string &name, int value) const
-{
-	glUniformBlockBinding(m_ID,glGetUniformBlockIndex(m_ID, name.c_str()), value);
-}
