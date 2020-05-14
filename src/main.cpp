@@ -3,7 +3,7 @@
 
 int main()
 {
-	MainWindow window(800, 600);
+	MainWindow window(960, 720);
 	if (window.init() != -1)
 	{
 		window.showImage();

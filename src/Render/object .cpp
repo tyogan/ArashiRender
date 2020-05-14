@@ -12,7 +12,6 @@ void Object::loadModel(const char* path)
 		tmpVAO->create(*it);
 		tmpVAOStruct.pMesh = it;
 		tmpVAOStruct.pVAO = tmpVAO;
-		tmpVAOStruct.mat = 0;
 		mVAOs.push_back(tmpVAOStruct);
 	}
 }
@@ -25,7 +24,6 @@ void Object::createCube()
 	tmpVAO->create(*tmpCube);
 	tmpVAOStruct.pMesh = tmpCube;
 	tmpVAOStruct.pVAO = tmpVAO;
-	tmpVAOStruct.mat = 0;
 	mVAOs.push_back(tmpVAOStruct);
 }
 
@@ -37,7 +35,6 @@ void Object::createSphere(float radius, unsigned int sectorCount, unsigned int s
 	tmpVAO->create(*tmpSphere);
 	tmpVAOStruct.pMesh = tmpSphere;
 	tmpVAOStruct.pVAO = tmpVAO;
-	tmpVAOStruct.mat = 0;
 	mVAOs.push_back(tmpVAOStruct);
 }
 
@@ -49,7 +46,6 @@ void Object::createPlane()
 	tmpVAO->create(*tmpPlane);
 	tmpVAOStruct.pMesh = tmpPlane;
 	tmpVAOStruct.pVAO = tmpVAO;
-	tmpVAOStruct.mat = 0;
 	mVAOs.push_back(tmpVAOStruct);
 }
 
@@ -61,14 +57,14 @@ void Object::draw()const
 	}
 }
 
-void Object::setOjectMaterial(const int& index,const int& mat)
+void Object::setMeshMaterial(const int& index,const int& mat)
 {
-	mVAOs[index].mat = mat;
+	mVAOs[index].pMesh->setMaterial(mat);
 }
 
-int Object::getObjectMaterial(const int& index)const
+int Object::getMeshMaterial(const int& index)const
 {
-	return mVAOs[index].mat;
+	return mVAOs[index].pMesh->getMaterial();
 }
 
 void Object::setObjectToWorldMat(const glm::mat4& matrix)
@@ -84,4 +80,28 @@ glm::mat4 Object::getObjectToWorldMat()const
 void Object::setObjectScale(const glm::mat4& scale)
 {
 	mObjectScale = scale;
+}
+
+int Object::getMeshSize()const
+{
+	return mVAOs.size();
+}
+
+vector<Vertex> Object::getMeshVertices(int index)const
+{
+	return mVAOs[index].pMesh->mVertices;
+}
+
+vector<unsigned int> Object::getMeshIndices(int index)const
+{
+	return mVAOs[index].pMesh->mIndices;
+}
+
+int Object::getMeshVertexsSize(int index)const
+{
+	return mVAOs[index].pMesh->getVertexNums();
+}
+int Object::getMeshIndexSize(int index)const
+{
+	return mVAOs[index].pMesh->getIndicesNums();
 }

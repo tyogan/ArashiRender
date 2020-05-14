@@ -6,7 +6,6 @@
 #include <iostream>
 
 #include "glad/glad.h"
-#include "stb_image.h"
 #include "glm/glm.hpp"
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
@@ -14,6 +13,7 @@
 #include "object.h"
 
 #include "vao.h"
+#include "image.h"
 
 class RENDER_API Envmap
 {

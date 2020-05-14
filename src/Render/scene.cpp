@@ -2,9 +2,9 @@
 
 Scene::Scene()
 {
-	Camera cam(glm::vec3(0, 0, 10.f), glm::vec3(0, 0, 0), glm::vec3(0, 1.f, 0));
+	Camera cam(glm::vec3(0.f, 6.f, -10.f), glm::vec3(0, 0, 0), glm::vec3(0, 1.f, 0));
 	mCameras.push_back(cam);
-	Light light(glm::vec3(-2.0f, 4.0f, 1.0f));
+	Light light(glm::vec3(3.f, 3.0f, 3.f),glm::vec3(1.f));
 	mLights.push_back(light);
 	createCube(glm::mat4(1));
 	loadShader("bin/shader/envmap_vert.glsl", "bin/shader/envmap_frag.glsl");

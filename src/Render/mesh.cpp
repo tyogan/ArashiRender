@@ -6,7 +6,6 @@ Mesh* Mesh::createSphere(float radius, unsigned int sectorCount, unsigned int st
 #ifndef M_PI
 #define M_PI (3.14159265358979323846)
 #endif
-
 	Mesh* m = new Mesh();
 	Vertex vert;
 	float sectorStep = 2 * M_PI / sectorCount;
@@ -64,6 +63,7 @@ Mesh* Mesh::createSphere(float radius, unsigned int sectorCount, unsigned int st
 			}
 		}
 	}
+	m->mMat = 2;
 	return m;
 }
 
@@ -90,7 +90,7 @@ Mesh* Mesh::createPlane()
 	{
 		m->mIndices.push_back(planeIndices[i]);
 	}
-
+	m->mMat = 2;
 	return m;
 }
 
@@ -117,7 +117,7 @@ Mesh* Mesh::createCube()
 	{
 		m->mIndices.push_back(cubeIndices[i]);
 	}
-
+	m->mMat = 2;
 	return m;
 }
 
@@ -130,3 +130,23 @@ unsigned int Mesh::getVertexNums()const
 {
 	return mVertices.size();
 }
+
+int Mesh::getMaterial()const
+{
+	return mMat;
+}
+
+void Mesh::setMaterial(int mat)
+{
+	mMat = mat;
+}
+
+//vector<Vertex>  Mesh::getVertices()const
+//{
+//
+//}
+//
+//vector<unsigned int>  Mesh::getIndices()const
+//{
+//
+//}

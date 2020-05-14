@@ -23,8 +23,13 @@ public:
 
 	unsigned int getIndicesNums()const;
 	unsigned int getVertexNums()const;
+	int getMaterial()const;
+	void setMaterial(int mat);
+	//vector<Vertex> getVertices()const;
+	//vector<unsigned int> getIndices()const;
 
 public:
 	vector<Vertex> mVertices;
 	vector<unsigned int> mIndices;
+	int mMat;
 };

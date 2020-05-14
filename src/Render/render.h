@@ -11,7 +11,9 @@
 #include "shadowmap.h"
 #include "envmap.h"
 
+#include "samplefunc.h"
 #include "ibltree.h"
+#include "iblsample.h"
 
 class RENDER_API GLRender
 {
@@ -29,6 +31,10 @@ public:
 
 private:
 	void initFBO();
+
+	vector<Light> sampleImage1(int lightnums, string path);
+	vector<Light> sampleImage2(int lightnums, string path);
+	void extractLights(int nums);
 
 	Shadowmap mShadowmap;
 	Envmap mEnvmap;

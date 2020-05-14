@@ -3,7 +3,7 @@ cmake_minimum_required(VERSION 3.4)
 project(ArashiRender)
 FIND_PACKAGE(assimp REQUIRED)
 
-include_directories("dependency/include" ${ASSIMP_INCLUDE_DIRS})
+include_directories("dependency/include"  ${ASSIMP_INCLUDE_DIRS} "dependency/eigen-eigen-bdd17ee3b1b3")
 link_directories("dependency/libs" ${ASSIMP_LIBRARY_DIRS})
 
 set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)

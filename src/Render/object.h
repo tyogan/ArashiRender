@@ -21,8 +21,15 @@ public:
 
 	void draw()const;
 
-	void setOjectMaterial(const int& index, const int& mat);
-	int getObjectMaterial(const int& index)const;
+	void setMeshMaterial(const int& index, const int& mat);
+	int getMeshMaterial(const int& index)const;
+	int getMeshSize()const;
+	vector<Vertex> getMeshVertices(int index)const;
+	vector<unsigned int> getMeshIndices(int index)const;
+
+	int getMeshVertexsSize(int index)const;
+	int getMeshIndexSize(int index)const;
+
 	void setObjectToWorldMat(const glm::mat4& matrix);
 	glm::mat4 getObjectToWorldMat()const;
 	void setObjectScale(const glm::mat4& scale);
@@ -31,7 +38,6 @@ private:
 	{
 		Mesh* pMesh;
 		VAO* pVAO;
-		int mat;
 	};
 	vector<MeshAndVAO> mVAOs;
 	glm::mat4 mObjectToWorldMat;

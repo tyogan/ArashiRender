@@ -2,6 +2,8 @@
 #include "glm/glm.hpp"
 #include <vector>
 
+#include "image.h"
+
 using std::vector;
 
 struct Sample
@@ -10,19 +12,19 @@ struct Sample
 	glm::vec3 mColor;
 };
 
-struct Image
-{
-	std::vector<int> mData;
-	int mWidth;
-	int mHeight;
-	int mChannel;
-};
-
 class RENDER_API IBLSample
 {
 public:
-	IBLSample(unsigned char* data, int width, int height, int nrChannel);
+	IBLSample(Image<float> image);
+	~IBLSample();
+	Sample* sampleImage(int nums,glm::vec2* pnts);
+
 private:
-	Image mImage;
-	float* mImageBright;
+	int findRow(int uEnery);
+	int findColumn(int row, int vEnery);
+
+private:
+	Image<float> mImage;
+	vector<vector<float>> mImageBright;
+	vector<float> mImageEnerySum;
 };

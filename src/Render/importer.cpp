@@ -62,7 +62,7 @@ Mesh* Importer::processMesh(aiMesh* mesh, const aiScene* scene)
 			m->mIndices.push_back(face.mIndices[j]);
 		}
 	}
-	
+	m->mMat = 2;
 	return m;
 }
 
