@@ -1,12 +1,25 @@
-#include <iostream>
-#include "Render/mainwindow.h"
+#include "Editor/mainwindow.h"
 
-int main()
+#include <QApplication>
+#include <QOffscreenSurface>
+#include <QOpenGLContext>
+
+int main(int argc, char* argv[])
 {
-	MainWindow window(960, 720);
-	if (window.init() != -1)
-	{
-		window.showImage();
-	}
-	return 0;
+	QCoreApplication::setAttribute(Qt::AA_ShareOpenGLContexts);
+	QCoreApplication::setAttribute(Qt::AA_DontCheckOpenGLContextThreadAffinity);
+	QApplication app(argc, argv);
+
+	QOffscreenSurface* surface = new QOffscreenSurface;
+	QOpenGLContext* context = new QOpenGLContext;
+
+	surface->create();
+	context->create();
+	context->makeCurrent(surface);
+
+	MainWindow win;
+	win.setWindowTitle(QString("ArashiRender"));
+	win.resize(QSize(960, 720));
+	win.show();
+	return app.exec();
 }

@@ -1,48 +1,44 @@
 #pragma once
 
-#include <string>
-
-#include <vector>
-#include <iostream>
-
-#include "glad/glad.h"
 #include "glm/glm.hpp"
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
-#include "shader.h"
-#include "object.h"
+#include "glad/glad.h"
 
 #include "vao.h"
-#include "image.h"
+#include "shader.h"
+#include "Utility/image.h"
+#include "Core/mesh.h"
+
+#include <string>
+#include <vector>
+#include <memory>
+
+using std::string;
+using std::vector;
+using std::shared_ptr;
 
 class RENDER_API Envmap
 {
 public:
 	Envmap();
 	~Envmap();
-	void load(std::string path);
-	void load(const std::vector<std::string>& imgNames);
-	void bindImageTexture();
-	void bindCubeTexture();
-	void bindCreateCubeTexture();
 
-	void createCubemapTexture();
+	void init();
+	void load(string path);
 
-	void createIrradianceTexture();
+	void createCubeTexture();
+	void drawBackground(glm::mat4 view, glm::mat4 proj);
+	
+	GLuint getTexture();
 
 private:
-	void initFBO();
+	shared_ptr<ShaderProgram> mCreateCubeTexProgram;
+	shared_ptr<ShaderProgram> mRenderBgProgram;
 
-	GLuint mImageTexture;
-	GLuint mCreateEnvCubemap;
-	GLuint mCubeTexture;
+	GLuint mCubeTex;
+	GLuint mLoadImageTex;
 
-	GLuint mIrradianceTexture;
-
-	GLuint mRBO;
-
-	Object* mObject;
+	shared_ptr<VAO> mCubeVAO;
 	GLuint mFBO;
-	ShaderProgram* mCubeProgram;
-	ShaderProgram* mIrrProgram;
 };

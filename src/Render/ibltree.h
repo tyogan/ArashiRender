@@ -6,7 +6,7 @@
 #define SAFE_DELETE_ARRAY(p)	{ if (p) delete [](p); (p) = NULL; }
 
 #include <glm/glm.hpp>
-#include "image.h"
+#include "Utility/image.h"
 
 struct CSample
 {

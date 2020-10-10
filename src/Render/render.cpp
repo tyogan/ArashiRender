@@ -1,280 +1,71 @@
 #include "render.h"
-#include "importer.h"
-#include "shadowmap.h"
-#include "camera.h"
-
 #include <time.h>
 
-GLRender::GLRender()
+void GLRender::render(FrameBuffer* fb, RenderScene* mRenderScene)
 {
-	initFBO();
-	mEnvmap.load("bin/envmap/alex.hdr");
-	
-	glm::mat4 model;
-	//model = glm::translate(model, glm::vec3(0, 1.f, 0));
-	model = glm::scale(model, glm::vec3(1.5f));
-	//model = glm::rotate(model, 35.f, glm::vec3(0, 1.f, 0.f));
-	mScene.loadObject("bin/model/teapot.fbx", model);
-	model = glm::scale(model, glm::vec3(3.5f,0.01f,3.5f));
-	mScene.createCube(model);
-	
-	extractLights(63);
-	std::cout << "hhh";
-	//sampleImage2(64, "bin/envmap/alex.hdr");
-}
-
-GLRender::~GLRender()
-{
-}
-
-GLuint GLRender::getTexture()
-{
-	//return mShadowmap.getTexture();
-	return mTexture;
-}
-
-GLuint GLRender::render()
-{
-	renderShadow();
-	mEnvmap.createCubemapTexture();
-	glBindFramebuffer(GL_FRAMEBUFFER, mFBO);
+	//renderShadow();
+	mRenderScene->mEnvmap->createCubeTexture();
+	fb->bindForDraw();
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	glViewport(0, 0, 960, 720);
-	renderBackground();
-	renderObject();
+	renderBackground(mRenderScene);
+	renderObject(mRenderScene);
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
-	return 0;
 }
 
-void GLRender::renderBackground()
-{
-	glm::mat4 view = glm::mat4(glm::mat3(mScene.getCamera(0).getViewMat()));
-	glm::mat4 proj = mScene.getCamera(0).getProjMat(60.f, 960.f / 720.f, 0.1f, 1000.f);
-	glDepthMask(GL_FALSE);
-	mScene.getShader(0)->use();
-	glActiveTexture(GL_TEXTURE0);
-	mEnvmap.bindCreateCubeTexture();
-	mScene.getShader(0)->setMat4f("V", view);
-	mScene.getShader(0)->setMat4f("P", proj);
-	mScene.getObject(0)->draw();
-	mScene.getShader(0)->release();
-	glDepthMask(GL_TRUE);
-}
-
-void GLRender::renderObject()
-{
-
-	glm::mat4 view, proj;
-	view = mScene.getCamera(0).getViewMat();
-	proj = mScene.getCamera(0).getProjMat(60.f, 960.f / 720.f, 0.1f, 1000.f);
-
-	GLfloat near_plane = 1.0f, far_plane = 10.f;
-	glm::mat4 shadowProj = glm::ortho(-10.0f, 10.0f, -10.0f, 10.0f, near_plane, far_plane);
-	glm::mat4 shadowView = glm::lookAt(mScene.getLight(0).getParallelLightDir(), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
-
-	glViewport(0, 0, 960, 720);
-	glClearColor(0.1f, 0.1f, 0.3f, 1.0f);
-
-	glActiveTexture(GL_TEXTURE0);
-	glBindTexture(GL_TEXTURE_2D, mShadowmap.getTexture());
-	glActiveTexture(GL_TEXTURE1);
-	glBindTexture(GL_TEXTURE_2D, 1);
-
-	mScene.getShader(2)->use();
-	mScene.getShader(2)->setMat4f("V", view);
-	mScene.getShader(2)->setMat4f("P", proj);
-	mScene.getShader(2)->setMat4f("lightV", shadowView);
-	mScene.getShader(2)->setMat4f("lightP", shadowProj);
-	mScene.getShader(2)->setVec3("lightDir", mScene.getLight(0).getParallelLightDir());
-	mScene.getShader(2)->setVec3("lightColor", mScene.getLight(0).getLightColor());
-	mScene.getShader(2)->setVec3("viewPos", mScene.getCamera(0).getPos());
-	for (int i = 1; i < mScene.getObjectSize(); i++)
-	{
-		mScene.getShader(2)->setMat4f("M", mScene.getObjectToworldMat(i));
-		mScene.getObject(i)->draw();
-	}
-	mScene.getShader(2)->release();
-}
-
-void GLRender::renderShadow()
+void GLRender::renderShadow(RenderScene* mRenderScene)
 {
 	GLfloat near_plane = 1.f, far_plane = 10.f;
 	glm::mat4 shadowProj = glm::ortho(-10.0f, 10.0f, -10.0f, 10.0f, near_plane, far_plane);
-	glm::mat4 shadowView = glm::lookAt(mScene.getLight(0).getParallelLightDir(), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
-
-	mShadowmap.bindForDraw();
-	mScene.getShader(1)->use();
-	mScene.getShader(1)->setMat4f("V", shadowView);
-	mScene.getShader(1)->setMat4f("P", shadowProj);
+	glm::mat4 shadowView = glm::lookAt(mRenderScene->mScene->mLights[0]->getParallelLightDir(), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+	
+	mRenderScene->mShadowmap->bindForDraw(0);
+	mRenderScene->mShadowmap->mShadowProgram->use();
+	mRenderScene->mShadowmap->mShadowProgram->setMat4f("V", shadowView);
+	mRenderScene->mShadowmap->mShadowProgram->setMat4f("P", shadowProj);
 	glCullFace(GL_FRONT);
-	for (int i = 1; i < mScene.getObjectSize(); i++)
+	for (int i = 0; i < mRenderScene->mSceneMeshParam.size(); i++)
 	{
-		mScene.getShader(1)->setMat4f("M", mScene.getObjectToworldMat(i));
-		mScene.getObject(i)->draw();
+		glm::mat4 model = mRenderScene->mSceneMeshParam[i].mTrans* mRenderScene->mSceneMeshParam[i].mRotate*mRenderScene->mSceneMeshParam[i].mScale;
+		mRenderScene->mShadowmap->mShadowProgram->setMat4f("M", model);
+		mRenderScene->mSceneMeshParam[i].mVAO->draw();
 	}
-
 	glCullFace(GL_BACK);
+	mRenderScene->mShadowmap->mShadowProgram->release();
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
 
-void GLRender::initFBO()
+void GLRender::renderObject(RenderScene* mRenderScene)
 {
-	glGenFramebuffers(1, &mFBO);
+	glm::mat4 view, proj;
+	view = mRenderScene->mScene->mCamera->getViewMat();
+	proj = mRenderScene->mScene->mCamera->getProjMat();
 
-	glGenTextures(1, &mTexture);
-	glBindTexture(GL_TEXTURE_2D, mTexture);
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, 960, 720, 0, GL_RGB, GL_UNSIGNED_BYTE, NULL);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-
-	glBindFramebuffer(GL_FRAMEBUFFER, mFBO);
-	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, mTexture, 0);
-
-	unsigned int rbo;
-	glGenRenderbuffers(1, &rbo);
-	glBindRenderbuffer(GL_RENDERBUFFER, rbo);
-	glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH24_STENCIL8, 960, 720); // use a single renderbuffer object for both a depth AND stencil buffer.
-	glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER, rbo);
-	if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
-		std::cout << "ERROR::FRAMEBUFFER:: Framebuffer is not complete!" << std::endl;
-
-	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+	glViewport(0, 0, 960, 720);
+	glClearColor(0.1f, 0.1f, 0.3f, 1.0f);
+	glEnable(GL_DEPTH_TEST);
+	for (int i = 0; i < mRenderScene->mSceneMeshParam.size(); i++)
+	{
+		auto mtl = mRenderScene->mMaterials[mRenderScene->mSceneMeshParam[i].mMatIdx];
+		mtl->use();
+		glm::mat4 model = mRenderScene->mSceneMeshParam[i].mTrans* mRenderScene->mSceneMeshParam[i].mRotate*mRenderScene->mSceneMeshParam[i].mScale;
+		mtl->setMat4f("M", model);
+		mtl->setMat4f("V", view);
+		mtl->setMat4f("P", proj);
+		mtl->setVec3("lightDir", mRenderScene->mScene->mLights[0]->getParallelLightDir());
+		mtl->setVec3("lightColor", mRenderScene->mScene->mLights[0]->getLightColor());
+		mtl->setVec3("objectColor", glm::vec3(1, 1, 1));
+		mtl->setInt("ShadowMap", 0);
+		glActiveTexture(GL_TEXTURE0);
+		glBindTexture(GL_TEXTURE_2D, mRenderScene->mShadowmap->getShadowTexture());
+		mRenderScene->mSceneMeshParam[i].mVAO->draw();
+		mtl->release();
+	}
 }
 
-void GLRender::extractLights(int nums)
+void GLRender::renderBackground(RenderScene* mRenderScene)
 {
-	vector<Light> lights = sampleImage1(nums, "bin/envmap/alex.hdr");
-	
-	vector<glm::vec4> lightDir;
-	vector<glm::vec4> lightColor;
-
-	lightDir.push_back(glm::vec4(mScene.getLight(0).getParallelLightDir(), 0));
-	lightColor.push_back(glm::vec4(mScene.getLight(0).getLightColor(), 0));
-	for (int i = 0; i < nums; i++)
-	{
-		mScene.addLight(lights[i]);
-		lightDir.push_back(glm::vec4(lights[i].getPointLightPos(),0));
-		lightColor.push_back(glm::vec4(lights[i].getLightColor(), 0));
-	}
-
-	unsigned int lightBlock;
-	glGenBuffers(1, &lightBlock);
-	glBindBuffer(GL_UNIFORM_BUFFER, lightBlock);
-	glBufferData(GL_UNIFORM_BUFFER, 128 * sizeof(glm::vec4), NULL, GL_STATIC_DRAW);
-	glBindBuffer(GL_UNIFORM_BUFFER, 0);
-
-	glBindBufferBase(GL_UNIFORM_BUFFER, 2, lightBlock);
-	mScene.getShader(2)->setBlock("lightBlock", 2);
-	
-	glBindBuffer(GL_UNIFORM_BUFFER, lightBlock);
-	glBufferSubData(GL_UNIFORM_BUFFER, 0, 64*sizeof(glm::vec4), lightDir.data());
-	glBufferSubData(GL_UNIFORM_BUFFER, 64*sizeof(glm::vec4), 64*sizeof(glm::vec4), lightColor.data());
-	glBindBuffer(GL_UNIFORM_BUFFER, 0);
-
+	glm::mat4 view = glm::mat4(glm::mat3(mRenderScene->mScene->mCamera->getViewMat()));
+	glm::mat4 proj = mRenderScene->mScene->mCamera->getProjMat();
+	mRenderScene->mEnvmap->drawBackground(view, proj);
 }
-
-vector<Light> GLRender::sampleImage1(int lightnums,string path)
-{
-	vector<Light> lights;
-
-	glm::vec2 *pnts = new glm::vec2[lightnums];
-	srand(time(nullptr));
-	for (unsigned int i = 0; i < lightnums; i++)
-	{
-		float u_offset = float(rand()) / RAND_MAX;
-		float v_offset = float(rand()) / RAND_MAX;
-		float u = Samplefunc::halton(i, 2) + u_offset;
-		float v = Samplefunc::halton(i, 3) + v_offset;
-		if (u >= 1) u -= 1.f;
-		if (v >= 1) v -= 1.f;
-		pnts[i].x = u;
-		pnts[i].y = v;
-	}
-	Image<float> img;
-	img.load(path.c_str());
-	IBLTree tree(16, img);
-	CSample* sample = tree.sampleWraping(lightnums, pnts);
-	
-	for (unsigned int idx = 0; idx < lightnums; idx++)
-	{
-		float u1 = sample[idx].pos.x;
-		float v1 = sample[idx].pos.y;
-		int u = u1*img.width;
-		int v = v1* img.height;
-
-		for (int i =u - 3; i <= u + 3; i++)
-		{
-			for (int j = v - 3; j <= v + 3; j++)
-			{
-				if (i >= 0 && i<img.width && j>=0 && j<img.height)
-				{
-					img(i, j, 0) = 1.0f;
-					img(i, j, 1) = 0;
-					img(i, j, 2) = 0;
-				}
-			}
-		}
-		double phi = 2 * 3.1415926 * u1;
-		double theta = acos(1 - 2 * v1);
-		double r = sin(theta);
-		glm::vec3 dir = -glm::vec3(r * cos(phi), cos(theta), r * sin(phi));
-		lights.push_back(Light(dir, sample[idx].color));
-	}
-
-	img.save("bin/envmap/sample11.hdr");
-	return lights;
-}
-
-vector<Light> GLRender::sampleImage2(int lightnums,string path)
-{
-	vector<Light> lights;
-	glm::vec2 *pnts = new glm::vec2[lightnums];
-	for (unsigned int i = 0; i < lightnums; i++)
-	{
-		float u_offset = float(rand()) / RAND_MAX;
-		float v_offset = float(rand()) / RAND_MAX;
-		float u = Samplefunc::halton(i, 2) + u_offset;
-		float v = Samplefunc::halton(i, 3) + v_offset;
-		if (u >= 1) u -= 1.f;
-		if (v >= 1) v -= 1.f;
-		pnts[i].x = u;
-		pnts[i].y = v;
-	}
-	Image<float> img;
-	img.load(path.c_str());
-	IBLSample iblsample(img);
-
-	Sample* sample = iblsample.sampleImage(lightnums, pnts);
-
-	for (unsigned int idx = 0; idx < lightnums; idx++)
-	{
-		int u = sample[idx].mPos.x;
-		int v = sample[idx].mPos.y;
-
-		for (int i = u - 3; i <= u + 3; i++)
-		{
-			for (int j = v - 3; j <= v + 3; j++)
-			{
-				if (i >= 0 && i<img.width && j >= 0 && j<img.height)
-				{
-					img(i, j, 0) = 1.0f;
-					img(i, j, 1) = 0;
-					img(i, j, 2) = 0;
-				}
-			}
-		}
-		double u1 = (double)u / img.width;
-		double v1 = (double)v / img.height;
-		double phi = 2 * 3.1415926 * u1;
-		double theta = acos(1 - 2 * v1);
-		double r = sin(theta);
-
-		lights.push_back(Light(-glm::vec3(r * cos(phi), cos(theta), r * sin(phi)), sample[idx].mColor));
-	}
-
-	img.save("bin/envmap/sample22.hdr");
-	return lights;
-}
-
-
-

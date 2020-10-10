@@ -1,9 +1,8 @@
 #pragma once
 #include "glm/glm.hpp"
+#include "Utility/image.h"
+
 #include <vector>
-
-#include "image.h"
-
 using std::vector;
 
 struct Sample

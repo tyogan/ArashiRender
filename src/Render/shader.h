@@ -20,5 +20,5 @@ public:
 	void setVec3(const std::string &name, glm::vec3 v)const;
 	void setBlock(const std::string &name, int idx)const;
 private:
-	GLuint m_ID;
+	GLuint mID;
 };
