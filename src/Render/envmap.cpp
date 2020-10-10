@@ -6,16 +6,12 @@ Envmap::Envmap()
 
 Envmap::~Envmap()
 {
-	glDeleteFramebuffers(1, &mFBO);
 	glDeleteTextures(1, &mLoadImageTex);
 	glDeleteTextures(1, &mCubeTex);
 }
 
 void Envmap::init()
 {
-	//shader
-	mCreateCubeTexProgram = shared_ptr<ShaderProgram>(
-		new ShaderProgram("bin/shader/createcubemap_vert.glsl", "bin/shader/createcubemap_frag.glsl"));
 	mRenderBgProgram = shared_ptr<ShaderProgram>(
 		new ShaderProgram("bin/shader/renderbg_vert.glsl", "bin/shader/renderbg_frag.glsl"));
 	
@@ -24,8 +20,7 @@ void Envmap::init()
 	mCubeVAO = shared_ptr<VAO>(new VAO);
 	mCubeVAO->create(cubeMesh);
 
-	//framebuffer,texture
-	glGenFramebuffers(1, &mFBO);
+	//texture
 	glGenTextures(1, &mLoadImageTex);
 	glGenTextures(1, &mCubeTex);
 
@@ -40,48 +35,6 @@ void Envmap::init()
 	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
 	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-
-	glBindFramebuffer(GL_FRAMEBUFFER, mFBO);
-	unsigned int rbo;
-	glGenRenderbuffers(1, &rbo);
-	glBindRenderbuffer(GL_RENDERBUFFER, rbo);
-	glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT24, 1024, 1024);
-	glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, rbo);
-	glBindFramebuffer(GL_FRAMEBUFFER, 0);
-
-}
-
-void Envmap::createCubeTexture()
-{
-	glm::mat4 captureProjection = glm::perspective(90.0f, 1.0f, 0.1f, 10.0f);
-	glm::mat4 captureViews[] =
-	{
-	   glm::lookAt(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(1.0f,  0.0f,  0.0f), glm::vec3(0.0f, -1.0f,  0.0f)),
-	   glm::lookAt(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(-1.0f,  0.0f,  0.0f), glm::vec3(0.0f, -1.0f,  0.0f)),
-	   glm::lookAt(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f,  1.0f,  0.0f), glm::vec3(0.0f,  0.0f,  1.0f)),
-	   glm::lookAt(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, -1.0f,  0.0f), glm::vec3(0.0f,  0.0f, -1.0f)),
-	   glm::lookAt(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f,  0.0f,  1.0f), glm::vec3(0.0f, -1.0f,  0.0f)),
-	   glm::lookAt(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f,  0.0f, -1.0f), glm::vec3(0.0f, -1.0f,  0.0f))
-	};
-
-	glBindFramebuffer(GL_FRAMEBUFFER, mFBO);
-	glViewport(0, 0, 1024, 1024);
-	mCreateCubeTexProgram->use();
-	mCreateCubeTexProgram->setMat4f("P", captureProjection);
-	mCreateCubeTexProgram->setInt("envmap", 0);
-	glActiveTexture(GL_TEXTURE0);
-	glBindTexture(GL_TEXTURE_2D, mLoadImageTex);
-	for (unsigned int i = 0; i < 6; ++i)
-	{
-		mCreateCubeTexProgram->setMat4f("V", captureViews[i]);
-		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0,
-			GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, mCubeTex, 0);
-		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-		mCubeVAO->draw();
-	}
-	mCreateCubeTexProgram->release();
-	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
 
 void Envmap::drawBackground(glm::mat4 view,glm::mat4 proj)
@@ -95,11 +48,6 @@ void Envmap::drawBackground(glm::mat4 view,glm::mat4 proj)
 	mCubeVAO->draw();
 	mRenderBgProgram->release();
 	glDepthMask(GL_TRUE);
-}
-
-GLuint Envmap::getTexture()
-{
-	return mCubeTex;
 }
 
 void Envmap::load(std::string path)
@@ -122,4 +70,50 @@ void Envmap::load(std::string path)
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 	glBindTexture(GL_TEXTURE_2D, 0);
+
+	createCubeTexture();
+}
+
+void Envmap::createCubeTexture()
+{
+	shared_ptr<ShaderProgram> createCubeTexProgram = shared_ptr<ShaderProgram>(
+		new ShaderProgram("bin/shader/createcubemap_vert.glsl", "bin/shader/createcubemap_frag.glsl"));
+	glm::mat4 captureProjection = glm::perspective(90.0f, 1.0f, 0.1f, 10.0f);
+	glm::mat4 captureViews[] =
+	{
+	   glm::lookAt(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(1.0f,  0.0f,  0.0f), glm::vec3(0.0f, -1.0f,  0.0f)),
+	   glm::lookAt(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(-1.0f,  0.0f,  0.0f), glm::vec3(0.0f, -1.0f,  0.0f)),
+	   glm::lookAt(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f,  1.0f,  0.0f), glm::vec3(0.0f,  0.0f,  1.0f)),
+	   glm::lookAt(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, -1.0f,  0.0f), glm::vec3(0.0f,  0.0f, -1.0f)),
+	   glm::lookAt(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f,  0.0f,  1.0f), glm::vec3(0.0f, -1.0f,  0.0f)),
+	   glm::lookAt(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f,  0.0f, -1.0f), glm::vec3(0.0f, -1.0f,  0.0f))
+	};
+
+	GLuint FBO, rbo;
+	glGenFramebuffers(1, &FBO);
+	glGenRenderbuffers(1, &rbo);
+
+	glBindFramebuffer(GL_FRAMEBUFFER, FBO);
+	glBindRenderbuffer(GL_RENDERBUFFER, rbo);
+	glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT24, 1024, 1024);
+	glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, rbo);
+
+	glViewport(0, 0, 1024, 1024);
+	createCubeTexProgram->use();
+	createCubeTexProgram->setMat4f("P", captureProjection);
+	createCubeTexProgram->setInt("envmap", 0);
+	glActiveTexture(GL_TEXTURE0);
+	glBindTexture(GL_TEXTURE_2D, mLoadImageTex);
+	for (unsigned int i = 0; i < 6; ++i)
+	{
+		createCubeTexProgram->setMat4f("V", captureViews[i]);
+		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0,
+			GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, mCubeTex, 0);
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+		mCubeVAO->draw();
+	}
+	createCubeTexProgram->release();
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+	glDeleteFramebuffers(1, &FBO);
 }

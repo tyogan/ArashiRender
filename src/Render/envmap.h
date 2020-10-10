@@ -27,18 +27,16 @@ public:
 	void init();
 	void load(string path);
 
-	void createCubeTexture();
 	void drawBackground(glm::mat4 view, glm::mat4 proj);
-	
-	GLuint getTexture();
 
 private:
-	shared_ptr<ShaderProgram> mCreateCubeTexProgram;
+	void createCubeTexture();
+
+private:
 	shared_ptr<ShaderProgram> mRenderBgProgram;
 
 	GLuint mCubeTex;
 	GLuint mLoadImageTex;
 
 	shared_ptr<VAO> mCubeVAO;
-	GLuint mFBO;
 };
