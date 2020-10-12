@@ -15,7 +15,6 @@ void RenderScene::init()
 void RenderScene::initScene()
 {
 	mScene = shared_ptr<Scene>(new Scene());
-
 	addSceneMesh("bin/model/teapot.obj", glm::mat4(1),glm::mat4(1));
 	addLight(glm::vec3(-2.0f, 4.0f, 1.0f), glm::vec3(1, 0, 0));
 	setCamera(glm::vec3(0, 0, 10));
@@ -64,6 +63,11 @@ void RenderScene::addSceneMesh(string path, glm::mat4 size, glm::mat4 pos)
 
 		mSceneMeshParam.push_back(m);
 	}
+	mSHData = SphericalHarmonics::computeSceneSHTrans(mScene);
+	for (int i = 0; i < mScene->mMeshes.size(); i++)
+	{
+		mSceneMeshParam[i].mVAO->sendShData(mSHData[i]);
+	}
 }
 
 void RenderScene::addSceneMesh(ModelType T, glm::mat4 size, glm::mat4 pos)
@@ -92,6 +96,12 @@ void RenderScene::addSceneMesh(ModelType T, glm::mat4 size, glm::mat4 pos)
 	m.mVAO->create(*(mScene->mMeshes.end()-1));
 
 	mSceneMeshParam.push_back(m);
+
+	mSHData = SphericalHarmonics::computeSceneSHTrans(mScene);
+	for (int i = 0; i < mScene->mMeshes.size(); i++)
+	{
+		mSceneMeshParam[i].mVAO->sendShData(mSHData[i]);
+	}
 }
 
 void RenderScene::deleteSceneMesh(int meshIdx)

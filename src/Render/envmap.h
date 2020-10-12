@@ -7,6 +7,7 @@
 
 #include "vao.h"
 #include "shader.h"
+#include "sh.h"
 #include "Utility/image.h"
 #include "Core/mesh.h"
 
@@ -32,6 +33,9 @@ public:
 private:
 	void createCubeTexture();
 
+public:
+	vector<glm::vec3> mSHLight;
+
 private:
 	shared_ptr<ShaderProgram> mRenderBgProgram;
 
@@ -39,4 +43,6 @@ private:
 	GLuint mLoadImageTex;
 
 	shared_ptr<VAO> mCubeVAO;
+
+
 };

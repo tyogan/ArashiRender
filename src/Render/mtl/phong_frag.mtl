@@ -2,6 +2,7 @@
 
 in vec3 worldPos;
 in vec3 worldNormal;
+in vec3 shColor;
 
 out vec4 FragColor;
 
@@ -16,5 +17,6 @@ void main()
 	vec3 l=normalize(lightDir);
 	vec3 n=normalize(worldNormal);
 	vec3 diffuse=dot(l,n)*lightColor*objectColor;
-	FragColor=vec4(diffuse,1);
+	vec3 env=shColor*objectColor;
+	FragColor=vec4(diffuse+env,1);
 }

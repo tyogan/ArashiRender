@@ -72,6 +72,7 @@ void Envmap::load(std::string path)
 	glBindTexture(GL_TEXTURE_2D, 0);
 
 	createCubeTexture();
+	mSHLight = SphericalHarmonics::computeLightSHCoeff(img);
 }
 
 void Envmap::createCubeTexture()

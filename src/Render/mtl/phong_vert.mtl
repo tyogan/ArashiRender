@@ -3,16 +3,25 @@
 layout (location=0)in vec3 position;
 layout (location=1)in vec3 normal;
 layout (location=2)in vec2 texCoords;
+layout (location=3)in vec3 sh0;
+layout (location=4)in vec3 sh1;
+layout (location=5)in vec3 sh2;
 
 uniform mat4 M;
 uniform mat4 V;
 uniform mat4 P;
 
+uniform vec3 shLight0;
+uniform vec3 shLight1;
+uniform vec3 shLight2;
+
 out vec3 worldPos;
 out vec3 worldNormal;
+out vec3 shLightColor;
 
 void main()
 {
 	gl_Position=P*V*M*vec4(position,1.0);
 	worldNormal=mat3(transpose(inverse(M)))*normal;
+	shColor=sh0*shLight0+sh1*shLight1+sh2*shLight2;
 }

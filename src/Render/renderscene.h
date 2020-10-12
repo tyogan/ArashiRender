@@ -51,4 +51,6 @@ public:
 	shared_ptr<Envmap> mEnvmap;
 	shared_ptr<Shadowmap> mShadowmap;
 	vector<shared_ptr<ShaderProgram>> mMaterials;
+
+	vector<vector<float>> mSHData;
 };
