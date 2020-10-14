@@ -15,8 +15,8 @@ class RENDER_API SphericalHarmonics
 {
 public:	
 	static std::vector<glm::vec3>				
-		computeLightSHCoeff(const Image<float>& envmap, unsigned int order = 2);
+		computeLightSHCoeff(const Image<float>& envmap, unsigned int order = 3);
 
 	static vector<vector<float>>
-		computeSceneSHTrans(shared_ptr<Scene> scene, unsigned int order = 2);
+		computeSceneSHTrans(shared_ptr<Scene> scene, unsigned int order = 3);
 };

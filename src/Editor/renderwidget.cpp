@@ -8,7 +8,6 @@ RenderWidget::RenderWidget(QWidget* parent)
 	:QWidget(parent)
 {
 	mFramebuffer = new FrameBuffer(960, 720);
-	mRender = new GLRender();
 }
 
 RenderWidget::~RenderWidget()
@@ -21,13 +20,14 @@ RenderWidget::~RenderWidget()
 void RenderWidget::setRenderScene(RenderScene* renderScene)
 {
 	mRenderScene = renderScene;
+	mRender = new GLRender(renderScene);
 }
 
 void RenderWidget::paintEvent(QPaintEvent* event)
 {
 	QPainter painter(this);
 	
-	mRender->render(mFramebuffer,mRenderScene);
+	mRender->render(mFramebuffer);
 	QImage image(mFramebuffer->mWidth, mFramebuffer->mHeight, QImage::Format_RGB888);
 	mFramebuffer->dump(image.bits());
 	painter.drawImage(0, 0, image.mirrored());

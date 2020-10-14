@@ -19,6 +19,14 @@ using std::string;
 using std::vector;
 using std::shared_ptr;
 
+struct EnvmapLight
+{
+	glm::vec3 mEnvmapLightDir;
+	glm::vec3 mEnvmapLightColor;
+	int lightSize = 0;
+	int lightCapacity = 128;
+};
+
 class RENDER_API Envmap
 {
 public:

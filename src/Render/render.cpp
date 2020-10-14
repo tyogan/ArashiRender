@@ -1,18 +1,39 @@
 #include "render.h"
 #include <time.h>
 
-void GLRender::render(FrameBuffer* fb, RenderScene* mRenderScene)
+GLRender::GLRender(RenderScene* renderScene)
+	:mRenderScene(renderScene)
 {
+	struct SHBlock
+	{
+		glm::vec3 data[16];
+	} block;
+
+	for (int i = 0; i < mRenderScene->mEnvmap->mSHLight.size(); i++)
+	{
+		block.data[i] = mRenderScene->mEnvmap->mSHLight[i];
+	}
+
+	GLuint shLight;
+	glGenBuffers(1, &shLight);
+	glBindBuffer(GL_UNIFORM_BUFFER, shLight);
+	glBufferData(GL_UNIFORM_BUFFER, sizeof(SHBlock), &block, GL_DYNAMIC_DRAW);
+	glBindBuffer(GL_UNIFORM_BUFFER, 0);
+}
+
+void GLRender::render(FrameBuffer* fb)
+{
+
 	//renderShadow();
 	fb->bindForDraw();
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	glViewport(0, 0, 960, 720);
-	renderBackground(mRenderScene);
-	renderObject(mRenderScene);
+	renderBackground();
+	renderObject();
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
 
-void GLRender::renderShadow(RenderScene* mRenderScene)
+void GLRender::renderShadow()
 {
 	GLfloat near_plane = 1.f, far_plane = 10.f;
 	glm::mat4 shadowProj = glm::ortho(-10.0f, 10.0f, -10.0f, 10.0f, near_plane, far_plane);
@@ -34,7 +55,7 @@ void GLRender::renderShadow(RenderScene* mRenderScene)
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
 
-void GLRender::renderObject(RenderScene* mRenderScene)
+void GLRender::renderObject()
 {
 	glm::mat4 view, proj;
 	view = mRenderScene->mScene->mCamera->getViewMat();
@@ -55,6 +76,7 @@ void GLRender::renderObject(RenderScene* mRenderScene)
 		mtl->setVec3("lightColor", mRenderScene->mScene->mLights[0]->getLightColor());
 		mtl->setVec3("objectColor", glm::vec3(1, 1, 1));
 		mtl->setInt("ShadowMap", 0);
+		mtl->setBlock("SHLightCoeff", 0);
 		glActiveTexture(GL_TEXTURE0);
 		glBindTexture(GL_TEXTURE_2D, mRenderScene->mShadowmap->getShadowTexture());
 		mRenderScene->mSceneMeshParam[i].mVAO->draw();
@@ -62,7 +84,7 @@ void GLRender::renderObject(RenderScene* mRenderScene)
 	}
 }
 
-void GLRender::renderBackground(RenderScene* mRenderScene)
+void GLRender::renderBackground()
 {
 	glm::mat4 view = glm::mat4(glm::mat3(mRenderScene->mScene->mCamera->getViewMat()));
 	glm::mat4 proj = mRenderScene->mScene->mCamera->getProjMat();

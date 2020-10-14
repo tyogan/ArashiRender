@@ -10,10 +10,14 @@
 class RENDER_API GLRender    
 {
 public:
-	void render(FrameBuffer* fb, RenderScene* mRenderScene);
+	GLRender(RenderScene* renderScene);
+	void render(FrameBuffer* fb);
 
 private:
-	void renderShadow(RenderScene* mRenderScene);
-	void renderObject(RenderScene* mRenderScene);
-	void renderBackground(RenderScene* mRenderScene);
+	void renderShadow();
+	void renderObject();
+	void renderBackground();
+
+private:
+	RenderScene* mRenderScene;
 };
