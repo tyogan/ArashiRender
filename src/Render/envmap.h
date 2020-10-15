@@ -8,6 +8,7 @@
 #include "vao.h"
 #include "shader.h"
 #include "sh.h"
+#include "ibltree.h"
 #include "Utility/image.h"
 #include "Core/mesh.h"
 
@@ -43,6 +44,7 @@ private:
 
 public:
 	vector<glm::vec3> mSHLight;
+	CSample* mBgSample;
 
 private:
 	shared_ptr<ShaderProgram> mRenderBgProgram;

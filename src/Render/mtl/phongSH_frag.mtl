@@ -2,12 +2,15 @@
 
 in vec3 worldPos;
 in vec3 worldNormal;
+in vec3 shLightColor;
 
 out vec4 FragColor;
 
 uniform vec3 lightDir;
 uniform vec3 lightColor;
 uniform vec3 objectColor;
+uniform vec3 specularColor;
+uniform vec3 camPos;
 
 uniform sampler2DArray ShadowMap;
 
@@ -16,5 +19,11 @@ void main()
 	vec3 l=normalize(lightDir);
 	vec3 n=normalize(worldNormal);
 	vec3 diffuse=dot(l,n)*lightColor*objectColor;
-	FragColor=vec4(diffuse,1);
+
+	vec3 viewDir=camPos-worldPos;
+	vec3 halfDir=normalize(l+viewDir);
+	vec3 spec=pow(dot(n,halfDir),5)*specularColor;
+
+	vec3 env=shLightColor*objectColor;
+	FragColor=vec4(pow(diffuse+env,vec3(1/2.2)),1.f);
 }

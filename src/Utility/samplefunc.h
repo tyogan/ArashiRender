@@ -15,4 +15,8 @@ public:
 		}
 		return r;
 	}
+	static glm::vec2 * sampleImage1()
+	{
+
+	}
 };

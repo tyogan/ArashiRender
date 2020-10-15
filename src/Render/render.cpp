@@ -6,12 +6,12 @@ GLRender::GLRender(RenderScene* renderScene)
 {
 	struct SHBlock
 	{
-		glm::vec3 data[16];
+		glm::vec4 data[16];
 	} block;
 
 	for (int i = 0; i < mRenderScene->mEnvmap->mSHLight.size(); i++)
 	{
-		block.data[i] = mRenderScene->mEnvmap->mSHLight[i];
+		block.data[i] = glm::vec4(mRenderScene->mEnvmap->mSHLight[i], 1.f);
 	}
 
 	GLuint shLight;
@@ -19,6 +19,7 @@ GLRender::GLRender(RenderScene* renderScene)
 	glBindBuffer(GL_UNIFORM_BUFFER, shLight);
 	glBufferData(GL_UNIFORM_BUFFER, sizeof(SHBlock), &block, GL_DYNAMIC_DRAW);
 	glBindBuffer(GL_UNIFORM_BUFFER, 0);
+	glBindBufferBase(GL_UNIFORM_BUFFER, 0, shLight);
 }
 
 void GLRender::render(FrameBuffer* fb)
@@ -77,6 +78,7 @@ void GLRender::renderObject()
 		mtl->setVec3("objectColor", glm::vec3(1, 1, 1));
 		mtl->setInt("ShadowMap", 0);
 		mtl->setBlock("SHLightCoeff", 0);
+		mtl->setVec3("coeff", mRenderScene->mEnvmap->mSHLight[0]);
 		glActiveTexture(GL_TEXTURE0);
 		glBindTexture(GL_TEXTURE_2D, mRenderScene->mShadowmap->getShadowTexture());
 		mRenderScene->mSceneMeshParam[i].mVAO->draw();

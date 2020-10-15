@@ -8,6 +8,7 @@ Envmap::~Envmap()
 {
 	glDeleteTextures(1, &mLoadImageTex);
 	glDeleteTextures(1, &mCubeTex);
+	delete mBgSample;
 }
 
 void Envmap::init()
@@ -73,6 +74,7 @@ void Envmap::load(std::string path)
 
 	createCubeTexture();
 	mSHLight = SphericalHarmonics::computeLightSHCoeff(img);
+	IBLTree tree(8, img);
 }
 
 void Envmap::createCubeTexture()
