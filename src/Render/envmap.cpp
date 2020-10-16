@@ -74,7 +74,10 @@ void Envmap::load(std::string path)
 
 	createCubeTexture();
 	mSHLight = SphericalHarmonics::computeLightSHCoeff(img);
+	glm::vec2* pnts = Samplefunc::sampleImage(128);
 	IBLTree tree(8, img);
+	mBgSample = tree.sampleWraping(128, pnts);
+	delete[] pnts;
 }
 
 void Envmap::createCubeTexture()

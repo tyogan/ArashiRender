@@ -1,5 +1,8 @@
 #pragma once
 
+#include <glm/glm.hpp>
+#include <time.h>
+
 class UTILITY_API Samplefunc
 {
 public:
@@ -15,8 +18,21 @@ public:
 		}
 		return r;
 	}
-	static glm::vec2 * sampleImage1()
+	static glm::vec2 * sampleImage(int num)
 	{
-
+		glm::vec2 *pnts = new glm::vec2[num];
+		srand(time(nullptr));
+		for (unsigned int i = 0; i < num; i++)
+		{
+			float uOffset = float(rand()) / RAND_MAX;
+			float vOffset = float(rand()) / RAND_MAX;
+			float u = halton(i, 2) + uOffset;
+			float v = halton(i, 3) + vOffset;
+			if (u >= 1) u -= 1.f;
+			if (v >= 1) v -= 1.f;
+			pnts[i].x = u;
+			pnts[i].y = v;
+		}
+		return pnts;
 	}
 };

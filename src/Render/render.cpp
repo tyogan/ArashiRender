@@ -7,19 +7,45 @@ GLRender::GLRender(RenderScene* renderScene)
 	struct SHBlock
 	{
 		glm::vec4 data[16];
-	} block;
+	} block0;
 
 	for (int i = 0; i < mRenderScene->mEnvmap->mSHLight.size(); i++)
 	{
-		block.data[i] = glm::vec4(mRenderScene->mEnvmap->mSHLight[i], 1.f);
+		block0.data[i] = glm::vec4(mRenderScene->mEnvmap->mSHLight[i], 1.f);
 	}
 
 	GLuint shLight;
 	glGenBuffers(1, &shLight);
 	glBindBuffer(GL_UNIFORM_BUFFER, shLight);
-	glBufferData(GL_UNIFORM_BUFFER, sizeof(SHBlock), &block, GL_DYNAMIC_DRAW);
+	glBufferData(GL_UNIFORM_BUFFER, sizeof(SHBlock), &block0, GL_DYNAMIC_DRAW);
 	glBindBuffer(GL_UNIFORM_BUFFER, 0);
 	glBindBufferBase(GL_UNIFORM_BUFFER, 0, shLight);
+
+	struct EnvLightBlock
+	{
+		glm::vec4 lightDir[128];
+		glm::vec4 lightColor[128];
+	} block1;
+
+	float u, v;
+
+	for (int i = 0; i < 128; i++)
+	{
+		u = mRenderScene->mEnvmap->mBgSample[i].pos.x;
+		v = mRenderScene->mEnvmap->mBgSample[i].pos.y;
+		double phi = 2 * 3.1415926 * u;
+		double theta = acos(1 - 2 * v);
+		double r = sin(theta);
+		block1.lightDir[i] = -glm::vec4(r * cos(phi), cos(theta), r * sin(phi), 0.f);
+		block1.lightColor[i] = glm::vec4(mRenderScene->mEnvmap->mBgSample[i].color, 1.f);
+	}
+
+	GLuint envLight;
+	glGenBuffers(1, &envLight);
+	glBindBuffer(GL_UNIFORM_BUFFER, envLight);
+	glBufferData(GL_UNIFORM_BUFFER, sizeof(EnvLightBlock), &block1, GL_DYNAMIC_DRAW);
+	glBindBuffer(GL_UNIFORM_BUFFER, 0);
+	glBindBufferBase(GL_UNIFORM_BUFFER, 1, envLight);
 }
 
 void GLRender::render(FrameBuffer* fb)
@@ -75,9 +101,10 @@ void GLRender::renderObject()
 		mtl->setMat4f("P", proj);
 		mtl->setVec3("lightDir", mRenderScene->mScene->mLights[0]->getParallelLightDir());
 		mtl->setVec3("lightColor", mRenderScene->mScene->mLights[0]->getLightColor());
-		mtl->setVec3("objectColor", glm::vec3(1, 1, 1));
+		mtl->setVec3("objectColor", glm::vec3(1.f));
 		mtl->setInt("ShadowMap", 0);
 		mtl->setBlock("SHLightCoeff", 0);
+		mtl->setBlock("EnvmapLightBlock", 1);
 		mtl->setVec3("coeff", mRenderScene->mEnvmap->mSHLight[0]);
 		glActiveTexture(GL_TEXTURE0);
 		glBindTexture(GL_TEXTURE_2D, mRenderScene->mShadowmap->getShadowTexture());

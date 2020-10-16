@@ -9,12 +9,29 @@ uniform vec3 lightDir;
 uniform vec3 lightColor;
 uniform vec3 objectColor;
 
+layout (std140) uniform EnvmapLightBlock
+{
+	vec4 envmapLightDir[128];
+	vec4 envmapLightColor[128];
+};
+
+
 uniform sampler2DArray ShadowMap;
 
 void main()
 {	
 	vec3 l=normalize(lightDir);
 	vec3 n=normalize(worldNormal);
-	vec3 diffuse=dot(l,n)*lightColor*objectColor;
-	FragColor=vec4(diffuse,1);
+	vec3 diffuse=dot(l,n)*lightColor;
+
+	vec3 env=vec3(0.f);
+	for(int i=0;i<128;i++)
+	{
+		l=normalize(envmapLightDir[i].xyz);
+		env+=max(dot(l,n),0)*envmapLightColor[i].xyz;
+	}
+
+	vec3 res=(diffuse+env)*objectColor;
+
+	FragColor=vec4(pow(res,vec3(1/2.2)),1);
 }
