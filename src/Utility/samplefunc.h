@@ -18,7 +18,7 @@ public:
 		}
 		return r;
 	}
-	static glm::vec2 * sampleImage(int num)
+	static glm::vec2 * samplePoints(int num)
 	{
 		glm::vec2 *pnts = new glm::vec2[num];
 		srand(time(nullptr));

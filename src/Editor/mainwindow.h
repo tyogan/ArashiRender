@@ -1,5 +1,9 @@
 #pragma once
 #include <QMainWindow>
+#include <QToolBar>
+#include <QStyle>
+#include <QMenu>
+#include <QMenuBar>
 
 #include "renderwidget.h"
 #include "Render/renderscene.h"

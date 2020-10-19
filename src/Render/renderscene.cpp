@@ -11,6 +11,7 @@ void RenderScene::init()
 	initShadowmap();
 	initMaterials("bin/mtl/");
 	std::cout << "hhh";
+	mGBufferProgram = shared_ptr<ShaderProgram>(new ShaderProgram("bin/shader/gbuffer_vert.mtl", "bin/shader/gbuffer_frag.mtl"));
 }
 
 void RenderScene::initScene()
@@ -37,8 +38,8 @@ void RenderScene::initMaterials(string path)
 {
 	shared_ptr<ShaderProgram> s0(new ShaderProgram((path + "obj_vert.mtl").c_str(), (path + "obj_frag.mtl").c_str()));
 	shared_ptr<ShaderProgram> s1(new ShaderProgram((path + "phong_vert.mtl").c_str(), (path + "phong_frag.mtl").c_str()));
-	shared_ptr<ShaderProgram> s2(new ShaderProgram((path + "phongSH_vert.mtl").c_str(), (path + "phongSH_frag.mtl").c_str()));
-	shared_ptr<ShaderProgram> s3(new ShaderProgram((path + "phongIBL_vert.mtl").c_str(), (path + "phongIBL_frag.mtl").c_str()));
+	shared_ptr<ShaderProgram> s2(new ShaderProgram((path + "phongIBL_vert.mtl").c_str(), (path + "phongIBL_frag.mtl").c_str()));
+	shared_ptr<ShaderProgram> s3(new ShaderProgram((path + "phongSH_vert.mtl").c_str(), (path + "phongSH_frag.mtl").c_str()));
 
 	mMaterials.push_back(s0);
 	mMaterials.push_back(s1);

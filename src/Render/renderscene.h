@@ -53,4 +53,6 @@ public:
 	vector<shared_ptr<ShaderProgram>> mMaterials;
 
 	vector<vector<float>> mSHData;
+
+	shared_ptr<ShaderProgram> mGBufferProgram;
 };

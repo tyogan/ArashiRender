@@ -55,9 +55,13 @@ void GLRender::render(FrameBuffer* fb)
 	fb->bindForDraw();
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	glViewport(0, 0, 960, 720);
-	renderBackground();
-	renderObject();
+	
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+}
+
+void GLRender::renderGBuffer()
+{
+	
 }
 
 void GLRender::renderShadow()

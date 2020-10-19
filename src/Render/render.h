@@ -14,6 +14,7 @@ public:
 	void render(FrameBuffer* fb);
 
 private:
+	void renderGBuffer();
 	void renderShadow();
 	void renderObject();
 	void renderBackground();
