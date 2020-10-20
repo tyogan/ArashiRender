@@ -10,11 +10,11 @@ uniform mat4 P;
 
 out vec3 vPosition;
 out vec3 vNormal;
-out vec3 vTexcoords;
+out vec2 vTexcoords;
 
 void main()
 {
-	gl_Position=P*V*M*position;
+	gl_Position=P*V*M*vec4(position,1.f);
 	vPosition=(M*vec4(position,1.f)).xyz;
 	vNormal=transpose(inverse(mat3(M)))*normal;
 	vTexcoords=texCoords;

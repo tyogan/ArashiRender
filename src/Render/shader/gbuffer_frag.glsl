@@ -2,15 +2,15 @@
 
 in vec3 vPosition;
 in vec3 vNormal;
-in vec3 vTexcoords;
+in vec2 vTexcoords;
 
-uniform int MeshId;
-uniform int MtlId;
+uniform int MeshIdx;
+uniform int MtlIdx;
 
 layout (location=0)out vec3 Position;
 layout (location=1)out vec3 Normal;
 layout (location=2)out vec3 Texcoords;
-layout (location=3)out vec3 FragIndex;
+layout (location=3)out ivec3 FragIndex;
 
 void main()
 {
@@ -18,5 +18,5 @@ void main()
 	Normal=normalize(vNormal);
 	Texcoords=vec3(vTexcoords,1.f);
 	
-	FragIndex=ivec3(MeshId,MtlId,1);
+	FragIndex=ivec3(MeshIdx,MtlIdx,1);
 }

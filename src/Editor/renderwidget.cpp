@@ -5,7 +5,7 @@
 #include <QtWidgets>
 
 RenderWidget::RenderWidget(QWidget* parent)
-	:QWidget(parent)
+	:QWidget(parent),mMeshIdx(-1)
 {
 	mFramebuffer = new FrameBuffer(960, 720);
 }
@@ -38,6 +38,8 @@ void RenderWidget::mouseMoveEvent(QMouseEvent * event)
 	event->accept();
 	if (!mRenderScene)
 		return;
+	if (mMeshIdx == -1) 
+		return;
 
 	int mode = 0;
 	if (event->buttons() == Qt::RightButton)
@@ -48,6 +50,7 @@ void RenderWidget::mouseMoveEvent(QMouseEvent * event)
 	QPoint pos = event->pos();
 	float dx = float(mMousePos.x() - pos.x());
 	float dy = float(mMousePos.y() - pos.y());
+
 
 	glm::mat4 V = mRenderScene->mScene->mCamera->getViewMat();
 	glm::mat4 P = mRenderScene->mScene->mCamera->getProjMat();
@@ -64,7 +67,7 @@ void RenderWidget::mouseMoveEvent(QMouseEvent * event)
 	{
 		glm::mat4 m;
 		m = glm::translate(m, glm::vec3(-dx / dx0, dy / dy0, 0));
-		mRenderScene->mSceneMeshParam[0].mTrans = m * mRenderScene->mSceneMeshParam[0].mTrans;
+		mRenderScene->mRenderMeshParam[mMeshIdx].mTrans = m * mRenderScene->mRenderMeshParam[mMeshIdx].mTrans;
 		break;
 	}
 	case 1:
@@ -75,7 +78,7 @@ void RenderWidget::mouseMoveEvent(QMouseEvent * event)
 		rotate = glm::rotate(rotate, dy, glm::vec3(1, 0, 0));
 		rotate = glm::rotate(rotate, dx, glm::vec3(0, 1, 0));
 
-		mRenderScene->mSceneMeshParam[0].mRotate = rotate * mRenderScene->mSceneMeshParam[0].mRotate;
+		mRenderScene->mRenderMeshParam[mMeshIdx].mRotate = rotate * mRenderScene->mRenderMeshParam[mMeshIdx].mRotate;
 
 		break;
 	}
@@ -91,4 +94,7 @@ void RenderWidget::mouseMoveEvent(QMouseEvent * event)
 void RenderWidget::mousePressEvent(QMouseEvent * event)
 {
 	mMousePos = event->pos();
+	glm::ivec3 mIdx = mFramebuffer->getMIdxPixel(mMousePos.x(), height() - mMousePos.y() - 1);
+
+	mMeshIdx = mIdx.x;
 }

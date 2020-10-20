@@ -24,6 +24,6 @@ private:
 	RenderScene* mRenderScene;
 
 	GLRender* mRender;
-
 	QPoint mMousePos;
+	int mMeshIdx;
 };

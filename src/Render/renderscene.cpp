@@ -10,14 +10,14 @@ void RenderScene::init()
 	initEnvmap();
 	initShadowmap();
 	initMaterials("bin/mtl/");
-	std::cout << "hhh";
-	mGBufferProgram = shared_ptr<ShaderProgram>(new ShaderProgram("bin/shader/gbuffer_vert.mtl", "bin/shader/gbuffer_frag.mtl"));
+	mGBufferProgram = shared_ptr<ShaderProgram>(new ShaderProgram("bin/shader/gbuffer_vert.glsl", "bin/shader/gbuffer_frag.glsl"));
 }
 
 void RenderScene::initScene()
 {
 	mScene = shared_ptr<Scene>(new Scene());
 	addSceneMesh("bin/model/teapot.obj", glm::mat4(1),glm::mat4(1));
+	addSceneMesh(ModelType::PLANE, glm::mat4(1), glm::mat4(1));
 	addLight(glm::vec3(-2.0f, 4.0f, 1.0f), glm::vec3(0.5f));
 	setCamera(glm::vec3(0, 0, 10));
 }
@@ -63,12 +63,12 @@ void RenderScene::addSceneMesh(string path, glm::mat4 size, glm::mat4 pos)
 		m.mVAO = shared_ptr<VAO>(new VAO);
 		m.mVAO->create(*iter);
 
-		mSceneMeshParam.push_back(m);
+		mRenderMeshParam.push_back(m);
 	}
 	mSHData = SphericalHarmonics::computeSceneSHTrans(mScene);
 	for (int i = 0; i < mScene->mMeshes.size(); i++)
 	{
-		mSceneMeshParam[i].mVAO->sendShData(mSHData[i]);
+		mRenderMeshParam[i].mVAO->sendShData(mSHData[i]);
 	}
 }
 
@@ -97,12 +97,12 @@ void RenderScene::addSceneMesh(ModelType T, glm::mat4 size, glm::mat4 pos)
 	m.mVAO = shared_ptr<VAO>(new VAO);
 	m.mVAO->create(*(mScene->mMeshes.end()-1));
 
-	mSceneMeshParam.push_back(m);
+	mRenderMeshParam.push_back(m);
 
 	mSHData = SphericalHarmonics::computeSceneSHTrans(mScene);
 	for (int i = 0; i < mScene->mMeshes.size(); i++)
 	{
-		mSceneMeshParam[i].mVAO->sendShData(mSHData[i]);
+		mRenderMeshParam[i].mVAO->sendShData(mSHData[i]);
 	}
 }
 

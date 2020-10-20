@@ -47,7 +47,7 @@ private:
 
 public:
 	shared_ptr<Scene> mScene;
-	vector<MeshParam> mSceneMeshParam;
+	vector<MeshParam> mRenderMeshParam;
 	shared_ptr<Envmap> mEnvmap;
 	shared_ptr<Shadowmap> mShadowmap;
 	vector<shared_ptr<ShaderProgram>> mMaterials;

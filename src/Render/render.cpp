@@ -50,18 +50,36 @@ GLRender::GLRender(RenderScene* renderScene)
 
 void GLRender::render(FrameBuffer* fb)
 {
-
 	//renderShadow();
-	fb->bindForDraw();
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-	glViewport(0, 0, 960, 720);
-	
+	fb->bindForDrawGBuffer();
+	renderGBuffer();
+	fb->bindForDrawImage();
+	renderBackground();
+	renderObject();
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
 
 void GLRender::renderGBuffer()
 {
-	
+	glm::mat4 view, proj;
+	view = mRenderScene->mScene->mCamera->getViewMat();
+	proj = mRenderScene->mScene->mCamera->getProjMat();
+
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	glViewport(0, 0, 960, 720);
+	glEnable(GL_DEPTH_TEST);
+	mRenderScene->mGBufferProgram->use();
+	for (int i = 0; i < mRenderScene->mRenderMeshParam.size(); i++)
+	{
+		glm::mat4 model = mRenderScene->mRenderMeshParam[i].mTrans* mRenderScene->mRenderMeshParam[i].mRotate*mRenderScene->mRenderMeshParam[i].mScale;
+		mRenderScene->mGBufferProgram->setMat4f("M", model);
+		mRenderScene->mGBufferProgram->setMat4f("V", view);
+		mRenderScene->mGBufferProgram->setMat4f("P", proj);
+		mRenderScene->mGBufferProgram->setInt("MeshIdx", i);
+		mRenderScene->mGBufferProgram->setInt("MtlIdx", mRenderScene->mRenderMeshParam[i].mMatIdx);
+		mRenderScene->mRenderMeshParam[i].mVAO->draw();
+	}
+	mRenderScene->mGBufferProgram->release();
 }
 
 void GLRender::renderShadow()
@@ -75,11 +93,11 @@ void GLRender::renderShadow()
 	mRenderScene->mShadowmap->mShadowProgram->setMat4f("V", shadowView);
 	mRenderScene->mShadowmap->mShadowProgram->setMat4f("P", shadowProj);
 	glCullFace(GL_FRONT);
-	for (int i = 0; i < mRenderScene->mSceneMeshParam.size(); i++)
+	for (int i = 0; i < mRenderScene->mRenderMeshParam.size(); i++)
 	{
-		glm::mat4 model = mRenderScene->mSceneMeshParam[i].mTrans* mRenderScene->mSceneMeshParam[i].mRotate*mRenderScene->mSceneMeshParam[i].mScale;
+		glm::mat4 model = mRenderScene->mRenderMeshParam[i].mTrans* mRenderScene->mRenderMeshParam[i].mRotate*mRenderScene->mRenderMeshParam[i].mScale;
 		mRenderScene->mShadowmap->mShadowProgram->setMat4f("M", model);
-		mRenderScene->mSceneMeshParam[i].mVAO->draw();
+		mRenderScene->mRenderMeshParam[i].mVAO->draw();
 	}
 	glCullFace(GL_BACK);
 	mRenderScene->mShadowmap->mShadowProgram->release();
@@ -93,13 +111,12 @@ void GLRender::renderObject()
 	proj = mRenderScene->mScene->mCamera->getProjMat();
 
 	glViewport(0, 0, 960, 720);
-	glClearColor(0.1f, 0.1f, 0.3f, 1.0f);
 	glEnable(GL_DEPTH_TEST);
-	for (int i = 0; i < mRenderScene->mSceneMeshParam.size(); i++)
+	for (int i = 0; i < mRenderScene->mRenderMeshParam.size(); i++)
 	{
-		auto mtl = mRenderScene->mMaterials[mRenderScene->mSceneMeshParam[i].mMatIdx];
+		auto mtl = mRenderScene->mMaterials[mRenderScene->mRenderMeshParam[i].mMatIdx];
 		mtl->use();
-		glm::mat4 model = mRenderScene->mSceneMeshParam[i].mTrans* mRenderScene->mSceneMeshParam[i].mRotate*mRenderScene->mSceneMeshParam[i].mScale;
+		glm::mat4 model = mRenderScene->mRenderMeshParam[i].mTrans* mRenderScene->mRenderMeshParam[i].mRotate*mRenderScene->mRenderMeshParam[i].mScale;
 		mtl->setMat4f("M", model);
 		mtl->setMat4f("V", view);
 		mtl->setMat4f("P", proj);
@@ -112,7 +129,7 @@ void GLRender::renderObject()
 		mtl->setVec3("coeff", mRenderScene->mEnvmap->mSHLight[0]);
 		glActiveTexture(GL_TEXTURE0);
 		glBindTexture(GL_TEXTURE_2D, mRenderScene->mShadowmap->getShadowTexture());
-		mRenderScene->mSceneMeshParam[i].mVAO->draw();
+		mRenderScene->mRenderMeshParam[i].mVAO->draw();
 		mtl->release();
 	}
 }
