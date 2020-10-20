@@ -14,16 +14,13 @@ FrameBuffer::~FrameBuffer()
 
 void FrameBuffer::initFramebuffer()
 {
-	for (int i = 0; i < 4; i++)
+	for (int i = 0; i < 5; i++)
 	{
 		glBindTexture(GL_TEXTURE_2D, mRenderTextures[i]);
 		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB32F, mWidth, mHeight, 0, GL_RGB, GL_FLOAT, NULL);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 	}
-
-	glBindTexture(GL_TEXTURE_2D, midx);
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB32I, mWidth, mHeight, 0, GL_RGB_INTEGER, GL_INT, NULL);
 
 	glBindFramebuffer(GL_FRAMEBUFFER, mFBO);
 	for (int i = 0; i < 5; i++)
@@ -42,13 +39,13 @@ void FrameBuffer::initFramebuffer()
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
 
-glm::ivec3 FrameBuffer::getMIdxPixel(int x, int y)
+glm::vec3 FrameBuffer::getMIdxPixel(int x, int y)
 {
-	glm::ivec3 mIdx(-1);
+	glm::vec3 mIdx(-1);
 	glBindFramebuffer(GL_READ_FRAMEBUFFER, mFBO);
 	glReadBuffer(GL_COLOR_ATTACHMENT4);
-	glReadPixels(x, y, 1, 1, GL_RGB_INTEGER, GL_INT, &mIdx);
-	if (mIdx.z == 0)
+	glReadPixels(x, y, 1, 1, GL_RGB, GL_FLOAT, &mIdx);
+	if (mIdx.z <0.001)
 	{
 		mIdx = glm::ivec3(-1);
 	}

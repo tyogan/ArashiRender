@@ -94,7 +94,7 @@ void RenderWidget::mouseMoveEvent(QMouseEvent * event)
 void RenderWidget::mousePressEvent(QMouseEvent * event)
 {
 	mMousePos = event->pos();
-	glm::ivec3 mIdx = mFramebuffer->getMIdxPixel(mMousePos.x(), height() - mMousePos.y() - 1);
+	glm::vec3 mIdx = mFramebuffer->getMIdxPixel(mMousePos.x(), height() - mMousePos.y() - 1);
 
 	mMeshIdx = mIdx.x;
 }

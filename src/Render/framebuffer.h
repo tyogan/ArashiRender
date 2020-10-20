@@ -14,7 +14,7 @@ public:
 	void bindForDrawImage();
 	void dump(void* dst);
 
-	glm::ivec3 getMIdxPixel(int x, int y);
+	glm::vec3 getMIdxPixel(int x, int y);
 	
 private:
 	void initFramebuffer();
