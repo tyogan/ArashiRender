@@ -2,10 +2,16 @@
 #include <QMainWindow>
 #include <QToolBar>
 #include <QStyle>
+#include <QDockWidget>
 #include <QMenu>
 #include <QMenuBar>
+#include <QToolBar>
 
-#include "renderwidget.h"
+#include "wrender.h"
+#include "wthierarchy.h"
+#include "wsetting.h"
+#include "wproperty.h"
+
 #include "Render/renderscene.h"
 
 #include <memory>
@@ -19,8 +25,13 @@ public:
 
 private:
 	void initUI();
-
+	void initMenuBar();
+	void initToolBar();
 private:
-	RenderWidget* mRenderWidget;
+	WidgetRender* mRenderWidget;
+	WidgetHierarchy* mHierarchyWidget;
+	WidgetSetting* mSettingWidget;
+	WidgetProperty* mPropertyWidget;
+
 	RenderScene* mRenderScene;
 };

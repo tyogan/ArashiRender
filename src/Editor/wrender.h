@@ -6,11 +6,11 @@
 #include "Render/render.h"
 
 
-class EDITOR_API RenderWidget :public QWidget
+class EDITOR_API WidgetRender :public QWidget
 {
 public:
-	RenderWidget(QWidget* parent);
-	~RenderWidget();
+	WidgetRender(QWidget* parent);
+	~WidgetRender();
 
 	void setRenderScene(RenderScene* renderScene);
 

@@ -1,29 +1,30 @@
-#include "renderwidget.h"
+#include "wrender.h"
 
 #include <QDebug>
 #include <QtGui>
 #include <QtWidgets>
 
-RenderWidget::RenderWidget(QWidget* parent)
+WidgetRender::WidgetRender(QWidget* parent)
 	:QWidget(parent),mMeshIdx(-1)
 {
 	mFramebuffer = new FrameBuffer(960, 720);
+	this->setFixedSize(960, 720);
 }
 
-RenderWidget::~RenderWidget()
+WidgetRender::~WidgetRender()
 {
 	delete mRenderScene;
 	delete mFramebuffer;
 	delete mRender;
 }
 
-void RenderWidget::setRenderScene(RenderScene* renderScene)
+void WidgetRender::setRenderScene(RenderScene* renderScene)
 {
 	mRenderScene = renderScene;
 	mRender = new GLRender(renderScene);
 }
 
-void RenderWidget::paintEvent(QPaintEvent* event)
+void WidgetRender::paintEvent(QPaintEvent* event)
 {
 	QPainter painter(this);
 	
@@ -33,7 +34,7 @@ void RenderWidget::paintEvent(QPaintEvent* event)
 	painter.drawImage(0, 0, image.mirrored());
 }
 
-void RenderWidget::mouseMoveEvent(QMouseEvent * event)
+void WidgetRender::mouseMoveEvent(QMouseEvent * event)
 {
 	event->accept();
 	if (!mRenderScene)
@@ -91,9 +92,10 @@ void RenderWidget::mouseMoveEvent(QMouseEvent * event)
 	mMousePos = event->pos();
 }
 
-void RenderWidget::mousePressEvent(QMouseEvent * event)
+void WidgetRender::mousePressEvent(QMouseEvent * event)
 {
 	mMousePos = event->pos();
+	int hhh = height();
 	glm::vec3 mIdx = mFramebuffer->getMIdxPixel(mMousePos.x(), height() - mMousePos.y() - 1);
 
 	mMeshIdx = mIdx.x;

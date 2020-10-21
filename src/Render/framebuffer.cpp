@@ -47,7 +47,7 @@ glm::vec3 FrameBuffer::getMIdxPixel(int x, int y)
 	glReadPixels(x, y, 1, 1, GL_RGB, GL_FLOAT, &mIdx);
 	if (mIdx.z <0.001)
 	{
-		mIdx = glm::ivec3(-1);
+		mIdx = glm::vec3(-1);
 	}
 	return mIdx;
 }
