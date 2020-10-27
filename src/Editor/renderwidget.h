@@ -8,6 +8,7 @@
 
 class EDITOR_API WidgetRender :public QWidget
 {
+
 public:
 	WidgetRender(QWidget* parent);
 	~WidgetRender();
@@ -18,6 +19,9 @@ public:
 
 	virtual void mouseMoveEvent(QMouseEvent *event) override;
 	virtual void mousePressEvent(QMouseEvent *event) override;
+
+signals:
+	void pickMesh(int meshIdx);
 
 private:
 	FrameBuffer* mFramebuffer;

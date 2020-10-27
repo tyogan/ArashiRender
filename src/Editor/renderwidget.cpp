@@ -1,4 +1,4 @@
-#include "wrender.h"
+#include "renderwidget.h"
 
 #include <QDebug>
 #include <QtGui>
@@ -99,4 +99,5 @@ void WidgetRender::mousePressEvent(QMouseEvent * event)
 	glm::vec3 mIdx = mFramebuffer->getMIdxPixel(mMousePos.x(), height() - mMousePos.y() - 1);
 
 	mMeshIdx = mIdx.x;
+	emit pickMesh(mMeshIdx);
 }

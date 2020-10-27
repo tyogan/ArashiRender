@@ -1,4 +1,5 @@
 #pragma once
+#include <QApplication>
 #include <QMainWindow>
 #include <QToolBar>
 #include <QStyle>
@@ -6,11 +7,13 @@
 #include <QMenu>
 #include <QMenuBar>
 #include <QToolBar>
+#include <QFileDialog>
+#include <QFile>
 
-#include "wrender.h"
-#include "wthierarchy.h"
-#include "wsetting.h"
-#include "wproperty.h"
+#include "renderwidget.h"
+#include "propertywidget.h"
+#include "hierarchywidget.h"
+#include "settingwidget.h"
 
 #include "Render/renderscene.h"
 
@@ -27,6 +30,13 @@ private:
 	void initUI();
 	void initMenuBar();
 	void initToolBar();
+	void initConnection();
+
+	void openObjectFile();
+	void createPlane();
+	void createCube();
+	void createSphere();
+
 private:
 	WidgetRender* mRenderWidget;
 	WidgetHierarchy* mHierarchyWidget;

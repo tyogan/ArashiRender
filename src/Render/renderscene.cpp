@@ -55,10 +55,11 @@ void RenderScene::addSceneMesh(string path, glm::mat4 size, glm::mat4 pos)
 	for (auto iter = mScene->mMeshes.begin() + len1; iter != mScene->mMeshes.end(); iter++)
 	{
 		MeshParam m;
-		m.mMatIdx = 3;
+		m.mMatIdx = 2;
 		m.mTrans = pos;
 		m.mScale = size;
 		m.mRotate = glm::mat4(1.f);
+		m.mObjectName = "Object";
 
 		m.mVAO = shared_ptr<VAO>(new VAO);
 		m.mVAO->create(*iter);
@@ -74,23 +75,27 @@ void RenderScene::addSceneMesh(string path, glm::mat4 size, glm::mat4 pos)
 
 void RenderScene::addSceneMesh(ModelType T, glm::mat4 size, glm::mat4 pos)
 {
+	MeshParam m;
+
 	switch (T)
 	{
 	case SPHERE:
 		mScene->loadMeshSphere(1);
+		m.mObjectName = "Sphere";
 		break;
 	case CUBE:
 		mScene->loadMeshCube();
+		m.mObjectName = "Cube";
 		break;
 	case PLANE:
 		mScene->loadMeshPlane();
+		m.mObjectName = "Plane";
 		break;
 	default:
 		break;
 	}
-
-	MeshParam m;
-	m.mMatIdx = 3;
+	
+	m.mMatIdx = 2;
 	m.mTrans = pos;
 	m.mScale = size;
 

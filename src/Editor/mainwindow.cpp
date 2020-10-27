@@ -13,6 +13,7 @@ MainWindow::MainWindow(QWidget *parent)
 MainWindow::~MainWindow()
 {
 	delete mRenderWidget;
+	delete mRenderScene;
 }
 
 void MainWindow::initUI()
@@ -20,8 +21,12 @@ void MainWindow::initUI()
 	mRenderWidget = new WidgetRender(this);
 	this->setCentralWidget(mRenderWidget);
 	mRenderWidget->setRenderScene(mRenderScene);
-	
-	mHierarchyWidget = new WidgetHierarchy();
+
+	QDockWidget* propertyDock = new QDockWidget(this);
+	propertyDock->setWindowTitle("Property");
+	this->addDockWidget(Qt::LeftDockWidgetArea, propertyDock);
+
+	mHierarchyWidget = new WidgetHierarchy(this,mRenderScene);
 	QDockWidget* hierarchyDock = new QDockWidget(this);
 	hierarchyDock->setWidget(mHierarchyWidget);
 	hierarchyDock->setWindowTitle("Hierarchy");
@@ -32,9 +37,8 @@ void MainWindow::initUI()
 	settingDock->setWindowTitle("Setting");
 	this->addDockWidget(Qt::LeftDockWidgetArea, settingDock);
 
-	QDockWidget* propertyDock = new QDockWidget(this);
-	propertyDock->setWindowTitle("Property");
-	this->addDockWidget(Qt::RightDockWidgetArea, propertyDock);
+	this->tabifyDockWidget(hierarchyDock, settingDock);
+	hierarchyDock->raise();
 
 	initMenuBar();
 	initToolBar();
@@ -55,12 +59,14 @@ void MainWindow::initMenuBar()
 	menuFile->addSeparator();
 	QAction* actionExit = menuFile->addAction("Exit");
 
+	//render type
 	QMenu* menuPipline = pMenuBar->addMenu("Pipline");
 	QAction* actionforward = menuPipline->addAction("Forward");
 	QAction* actionDeferred = menuPipline->addAction("Deferred");
 	menuPipline->addSeparator();
 	QAction* actionOffline = menuPipline->addAction("OffLine");
 
+	//load mesh
 	QMenu* menuScene = pMenuBar->addMenu(tr("&SceneObject"));
 	QMenu* menuObject = menuScene->addMenu("Geometry");
 	QAction* actionLoadObject = menuObject->addAction("Load Object");
@@ -68,6 +74,13 @@ void MainWindow::initMenuBar()
 	QAction* actioncreatePlane = menuCreateObject->addAction("Plane");
 	QAction* actioncreateCube = menuCreateObject->addAction("Cube");
 	QAction* actioncreateSphere = menuCreateObject->addAction("Sphere");
+	//mesh connection
+	connect(actionLoadObject, &QAction::triggered, this, &MainWindow::openObjectFile);
+	connect(actioncreatePlane, &QAction::triggered, this, &MainWindow::createPlane);
+	connect(actioncreateCube, &QAction::triggered, this, &MainWindow::createCube);
+	connect(actioncreateSphere, &QAction::triggered, this, &MainWindow::createSphere);
+
+	//
 	QAction* actionEnvmap = menuScene->addAction(tr("&Envmap"));
 	QAction* actionLight = menuScene->addAction(tr("&Light"));
 }
@@ -82,4 +95,38 @@ void MainWindow::initToolBar()
 	QAction* actionMove = toolBar->addAction("Move");
 	QAction* actionRotate = toolBar->addAction("Rotate");
 	toolBar->addSeparator();
+}
+
+void MainWindow::initConnection()
+{
+	
+}
+
+void MainWindow::openObjectFile()
+{
+	QString fileName;
+	fileName = QFileDialog::getOpenFileName(this, "Open File", QString(),"*.obj");
+
+	if (fileName == "")
+	{
+		return;
+	}
+	else {
+		mRenderScene->addSceneMesh(fileName.toStdString(), glm::mat4(1.f), glm::mat4(1.f));
+	}
+}
+
+void MainWindow::createPlane()
+{
+	mRenderScene->addSceneMesh(ModelType::PLANE, glm::mat4(1.f), glm::mat4(1.f));
+}
+
+void MainWindow::createCube()
+{
+	mRenderScene->addSceneMesh(ModelType::CUBE, glm::mat4(1.f), glm::mat4(1.f));
+}
+
+void MainWindow::createSphere()
+{
+	mRenderScene->addSceneMesh(ModelType::SPHERE, glm::mat4(1.f), glm::mat4(1.f));
 }

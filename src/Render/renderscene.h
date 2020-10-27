@@ -12,9 +12,10 @@
 using std::vector;
 using std::shared_ptr;
 
-struct  MeshParam
+struct MeshParam
 {
 	shared_ptr<VAO> mVAO;
+	string mObjectName;
 	int mMatIdx;
 	glm::mat4 mScale;
 	glm::mat4 mRotate;
