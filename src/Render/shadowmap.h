@@ -8,7 +8,7 @@ using std::shared_ptr;
 class RENDER_API Shadowmap
 {
 public:
-	Shadowmap();
+	Shadowmap(GLuint layers);
 	~Shadowmap();
 	void bindForDraw(int idx);
 	GLuint getShadowTexture();
@@ -19,4 +19,5 @@ public:
 private:
 	GLuint mFramebuffer;
 	GLuint mTextures;
+	GLuint mLayers;
 };
