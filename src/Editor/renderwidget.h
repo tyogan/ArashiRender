@@ -8,7 +8,7 @@
 
 class EDITOR_API WidgetRender :public QWidget
 {
-
+	Q_OBJECT
 public:
 	WidgetRender(QWidget* parent);
 	~WidgetRender();

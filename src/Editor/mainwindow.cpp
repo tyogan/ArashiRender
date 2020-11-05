@@ -13,6 +13,8 @@ MainWindow::MainWindow(QWidget *parent)
 MainWindow::~MainWindow()
 {
 	delete mRenderWidget;
+	delete mPropertyWidget;
+	delete mHierarchyWidget;
 	delete mRenderScene;
 }
 
@@ -22,7 +24,9 @@ void MainWindow::initUI()
 	this->setCentralWidget(mRenderWidget);
 	mRenderWidget->setRenderScene(mRenderScene);
 
+	mPropertyWidget = new WidgetProperty(this, mRenderScene);
 	QDockWidget* propertyDock = new QDockWidget(this);
+	propertyDock->setWidget(mPropertyWidget);
 	propertyDock->setWindowTitle("Property");
 	this->addDockWidget(Qt::LeftDockWidgetArea, propertyDock);
 
@@ -42,6 +46,7 @@ void MainWindow::initUI()
 
 	initMenuBar();
 	initToolBar();
+	initConnection();
 }
 
 void MainWindow::initMenuBar()
@@ -99,7 +104,7 @@ void MainWindow::initToolBar()
 
 void MainWindow::initConnection()
 {
-	
+	connect(mRenderWidget, &WidgetRender::pickMesh, mPropertyWidget, &WidgetProperty::loadMeshProperty);
 }
 
 void MainWindow::openObjectFile()

@@ -1,6 +1,7 @@
 file(GLOB_RECURSE SOURCE *.h *.cpp)
 
 find_package (Qt5 REQUIRED COMPONENTS Core Widgets Gui)
+set(CMAKE_AUTOMOC ON)
 
 if (MSVC)
     add_definitions(-DEDITOR_API=__declspec\(dllexport\))

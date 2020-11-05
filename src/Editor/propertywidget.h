@@ -1,12 +1,16 @@
 #pragma once
 
 #include <memory>
+#include <iostream>
 
 #include <QWidget>
-
+#include <QLabel>
+#include <QVBoxLayout>
+#include <QTextEdit>
 #include "Render/renderscene.h"
 
 using std::shared_ptr;
+
 
 class EDITOR_API WidgetProperty :public QWidget
 {
