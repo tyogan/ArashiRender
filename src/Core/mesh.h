@@ -13,8 +13,8 @@ class CORE_API Mesh
 {
 public:
 	static shared_ptr<Mesh> createCube();
-	static shared_ptr<Mesh> createSphere(float radius, unsigned int sectorCount, unsigned int stackCount);
 	static shared_ptr<Mesh> createPlane();   
+	static shared_ptr<Mesh> createSphere(float radius, unsigned int sectorCount, unsigned int stackCount);
 
 public:
 	vector<glm::vec3> mPositions;

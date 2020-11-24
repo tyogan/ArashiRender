@@ -3,6 +3,7 @@
 #include "light.h"
 #include "mesh.h"
 #include "importer.h"
+#include "camera.h"
 
 #include <vector>
 #include <memory>

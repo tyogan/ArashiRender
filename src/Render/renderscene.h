@@ -32,13 +32,14 @@ enum ModelType
 class RENDER_API RenderScene
 {
 public:
+	~RenderScene();
 	void init();
+
 	void addSceneMesh(string path,glm::mat4 size,glm::mat4 pos);
 	void addSceneMesh(ModelType T, glm::mat4 size, glm::mat4 pos);
 	void deleteSceneMesh(int meshIdx);
-
-	void addLight(glm::vec3 lightDir, glm::vec3 lightColor);
-	void setCamera(glm::vec3 pos);
+	void addLight(Light* light);
+	void setCamera(Camera* cam);
 
 private:
 	void initScene();
@@ -47,13 +48,15 @@ private:
 	void initMaterials(string path);
 
 public:
-	shared_ptr<Scene> mScene;
-	vector<MeshParam> mRenderMeshParam;
-	shared_ptr<Envmap> mEnvmap;
-	shared_ptr<Shadowmap> mShadowmap;
-	vector<shared_ptr<ShaderProgram>> mMaterials;
-
 	vector<vector<float>> mSHData;
 
-	shared_ptr<ShaderProgram> mGBufferProgram;
+	Scene* mScene;
+	vector<MeshParam> mRenderMeshParam;
+	
+	Envmap* mEnvmap;
+	Shadowmap* mEnvShadowmap;
+	Shadowmap* mShadowmap;
+
+	ShaderProgram* mGBufferProgram;
+	vector<shared_ptr<ShaderProgram>> mMaterialLibraries;
 };

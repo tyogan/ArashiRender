@@ -34,7 +34,11 @@ void VAO::create(shared_ptr<Mesh> mesh)
 	glBufferSubData(GL_ARRAY_BUFFER, sizeof(glm::vec3)*vtxNum*2, sizeof(glm::vec2)*vtxNum, mesh->mTexCoords.data());
 
 	glEnableVertexAttribArray(0);
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(glm::vec3), (void*)0);
+	
+	
+	
+	
+	(0, 3, GL_FLOAT, GL_FALSE, sizeof(glm::vec3), (void*)0);
 	glEnableVertexAttribArray(1);
 	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(glm::vec3), (void*)(sizeof(glm::vec3)*vtxNum));
 	glEnableVertexAttribArray(2);

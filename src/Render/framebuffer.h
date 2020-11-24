@@ -33,6 +33,4 @@ private:
 			GLuint color, position, normal, texcoord, midx;
 		};
 	};
-	
-
 };

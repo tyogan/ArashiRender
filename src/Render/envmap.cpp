@@ -6,26 +6,26 @@ Envmap::Envmap()
 
 Envmap::~Envmap()
 {
-	glDeleteTextures(1, &mLoadImageTex);
-	glDeleteTextures(1, &mCubeTex);
-	delete mBgSample;
+	glDeleteTextures(1, &mEnvmapImageTex);
+	glDeleteTextures(1, &mEnvmapCubeTex);
 }
 
 void Envmap::init()
 {
 	mRenderBgProgram = shared_ptr<ShaderProgram>(
 		new ShaderProgram("bin/shader/renderbg_vert.glsl", "bin/shader/renderbg_frag.glsl"));
-	
+	mCreateCubeTexProgram = shared_ptr<ShaderProgram>(
+		new ShaderProgram("bin/shader/createcubemap_vert.glsl", "bin/shader/createcubemap_frag.glsl"));
 	//cubeVAO
 	shared_ptr<Mesh> cubeMesh = Mesh::createCube();
 	mCubeVAO = shared_ptr<VAO>(new VAO);
 	mCubeVAO->create(cubeMesh);
 
 	//texture
-	glGenTextures(1, &mLoadImageTex);
-	glGenTextures(1, &mCubeTex);
+	glGenTextures(1, &mEnvmapImageTex);
+	glGenTextures(1, &mEnvmapCubeTex);
 
-	glBindTexture(GL_TEXTURE_CUBE_MAP, mCubeTex);
+	glBindTexture(GL_TEXTURE_CUBE_MAP, mEnvmapCubeTex);
 	for (int i = 0; i < 6; i++)
 	{
 		glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, GL_RGB,
@@ -43,7 +43,7 @@ void Envmap::drawBackground(glm::mat4 view,glm::mat4 proj)
 	glDepthMask(GL_FALSE);
 	mRenderBgProgram->use();
 	glActiveTexture(GL_TEXTURE0);
-	glBindTexture(GL_TEXTURE_CUBE_MAP, mCubeTex);
+	glBindTexture(GL_TEXTURE_CUBE_MAP, mEnvmapCubeTex);
 	mRenderBgProgram->setMat4f("V", view);
 	mRenderBgProgram->setMat4f("P", proj);
 	mCubeVAO->draw();
@@ -56,7 +56,7 @@ void Envmap::load(std::string path)
 	int width, height, nrChannels;
 	Image<float> img;
 	img.load(path);
-	glBindTexture(GL_TEXTURE_2D, mLoadImageTex);
+	glBindTexture(GL_TEXTURE_2D, mEnvmapImageTex);
 	if (img.data())
 	{
 		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB32F, img.width, img.height,
@@ -71,19 +71,23 @@ void Envmap::load(std::string path)
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 	glBindTexture(GL_TEXTURE_2D, 0);
-
 	createCubeTexture();
+	
 	mSHLight = SphericalHarmonics::computeLightSHCoeff(img);
+	
 	glm::vec2* pnts = Samplefunc::samplePoints(128);
-	IBLTree tree(8, img);
-	mBgSample = tree.sampleWraping(128, pnts);
+	int treeDepth = 8;
+	int sampleNum = 128;
+	IBLTree tree(treeDepth, img);
+	EnvmapLight* bgSample = tree.sampleWraping(sampleNum, pnts);
+	mEnvLights.assign(bgSample, bgSample + sampleNum);
+	delete[] bgSample;
 	delete[] pnts;
 }
 
 void Envmap::createCubeTexture()
 {
-	shared_ptr<ShaderProgram> createCubeTexProgram = shared_ptr<ShaderProgram>(
-		new ShaderProgram("bin/shader/createcubemap_vert.glsl", "bin/shader/createcubemap_frag.glsl"));
+
 	glm::mat4 captureProjection = glm::perspective(90.0f, 1.0f, 0.1f, 10.0f);
 	glm::mat4 captureViews[] =
 	{
@@ -105,21 +109,21 @@ void Envmap::createCubeTexture()
 	glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, rbo);
 
 	glViewport(0, 0, 1024, 1024);
-	createCubeTexProgram->use();
-	createCubeTexProgram->setMat4f("P", captureProjection);
-	createCubeTexProgram->setInt("envmap", 0);
+	mCreateCubeTexProgram->use();
+	mCreateCubeTexProgram->setMat4f("P", captureProjection);
+	mCreateCubeTexProgram->setInt("envmap", 0);
 	glActiveTexture(GL_TEXTURE0);
-	glBindTexture(GL_TEXTURE_2D, mLoadImageTex);
+	glBindTexture(GL_TEXTURE_2D, mEnvmapImageTex);
 	for (unsigned int i = 0; i < 6; ++i)
 	{
-		createCubeTexProgram->setMat4f("V", captureViews[i]);
+		mCreateCubeTexProgram->setMat4f("V", captureViews[i]);
 		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0,
-			GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, mCubeTex, 0);
+			GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, mEnvmapCubeTex, 0);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 		mCubeVAO->draw();
 	}
-	createCubeTexProgram->release();
+	mCreateCubeTexProgram->release();
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 	glDeleteFramebuffers(1, &FBO);
 }

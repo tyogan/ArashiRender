@@ -15,6 +15,9 @@ public:
 	vector<shared_ptr<Mesh>> loadModel(const char* path);
 
 private:
-	void processNode(aiNode* node, const aiScene* scene, vector<shared_ptr<Mesh>>& Meshes);
+	void processNode(aiNode* node, const aiScene* scene);
 	shared_ptr<Mesh> processMesh(aiMesh* mesh, const aiScene* scene);
+
+private:
+	vector<shared_ptr<Mesh>> mMeshes;
 };

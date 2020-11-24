@@ -85,7 +85,7 @@ void MainWindow::initMenuBar()
 	connect(actioncreateCube, &QAction::triggered, this, &MainWindow::createCube);
 	connect(actioncreateSphere, &QAction::triggered, this, &MainWindow::createSphere);
 
-	//
+	//envmap
 	QAction* actionEnvmap = menuScene->addAction(tr("&Envmap"));
 	QAction* actionLight = menuScene->addAction(tr("&Light"));
 }

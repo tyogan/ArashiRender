@@ -1,12 +1,12 @@
 #pragma once
 #include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
 
 class CORE_API Camera
 {
 public:
 	glm::mat4 getViewMat()const;
 	virtual glm::mat4 getProjMat()const = 0;
-	void setProjMat(glm::mat4 view);
 
 public:
 	float mZNear = 0.1f;
@@ -20,21 +20,21 @@ public:
 class CORE_API PerspectiveCamera :public Camera
 {
 public:
-	float mFov = 60.f;
-	float mAspect = 1.f;
+	virtual glm::mat4 getProjMat()const;
 
 public:
-	virtual glm::mat4 getProjMat()const;
+	float mFov = 60.f;
+	float mAspect = 1.f;
 };
 
 class CORE_API OrthogonalCamera :public Camera
 {
 public:
+	virtual glm::mat4 getProjMat()const;
+
+public:
 	float mLeft = -1.f;
 	float mRight = 1.f;
 	float mBottom = -1.f;
 	float mTop = 1.f;
-
-public:
-	virtual glm::mat4 getProjMat()const;
 };

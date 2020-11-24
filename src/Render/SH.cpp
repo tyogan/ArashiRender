@@ -55,7 +55,7 @@ RTCRay _getRTCRay(const glm::vec3& o, const glm::vec3& d) {
 	return ray;
 }
 
-RTCScene initEmbree(shared_ptr<Scene> pScene, RTCDevice device)
+RTCScene initEmbree(Scene* pScene, RTCDevice device)
 {
 	RTCScene scene = rtcNewScene(device);
 	if (rtcGetDeviceError(device) != RTC_ERROR_NONE) {
@@ -155,7 +155,7 @@ void computeVertexSHCoeff(RTCScene scene, glm::vec3 normal, glm::vec3 pos,
 	}
 }
 
-vector<vector<float>> SphericalHarmonics::computeSceneSHTrans(shared_ptr<Scene> pScene, unsigned int order)
+vector<vector<float>> SphericalHarmonics::computeSceneSHTrans(Scene* pScene, unsigned int order)
 {
 	if (precomputed_samples.empty())
 	{

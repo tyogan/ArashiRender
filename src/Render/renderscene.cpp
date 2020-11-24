@@ -1,5 +1,14 @@
 #include "renderscene.h"
 
+RenderScene::~RenderScene()
+{
+	delete mScene;
+	delete mEnvmap;
+	delete mEnvShadowmap;
+	delete mShadowmap;
+	delete mGBufferProgram;
+}
+
 void RenderScene::init()
 {
 	if (!gladLoadGL()) {
@@ -10,41 +19,50 @@ void RenderScene::init()
 	initEnvmap();
 	initShadowmap();
 	initMaterials("bin/mtl/");
-	mGBufferProgram = shared_ptr<ShaderProgram>(new ShaderProgram("bin/shader/gbuffer_vert.glsl", "bin/shader/gbuffer_frag.glsl"));
+	mGBufferProgram = new ShaderProgram("bin/shader/gbuffer_vert.glsl", "bin/shader/gbuffer_frag.glsl");
 }
 
 void RenderScene::initScene()
 {
-	mScene = shared_ptr<Scene>(new Scene());
-	addSceneMesh("bin/model/teapot.obj", glm::mat4(1),glm::mat4(1));
-	addSceneMesh(ModelType::PLANE, glm::mat4(1), glm::mat4(1));
-	addLight(glm::vec3(-2.0f, 4.0f, 1.0f), glm::vec3(0.5f));
-	setCamera(glm::vec3(0, 0, 10));
+	mScene = new Scene();
+	
+	this->addSceneMesh("bin/model/teapot.obj", glm::mat4(1),glm::mat4(1));
+	this->addSceneMesh(ModelType::CUBE, glm::mat4(1), glm::mat4(1));
+	
+	Light* light = new Light();
+	light->mLightColor = glm::vec3(0.5f);
+	light->mLightDir = glm::vec3(-2.0f, 4.0f, 1.0f);
+	this->addLight(light);
+	light = nullptr;
+
+	Camera* cam = new PerspectiveCamera();
+	cam->mPos = glm::vec3(0, 0, 10);
+	this->setCamera(cam);
+	cam = nullptr;
 }
 
 void RenderScene::initEnvmap()
 {
-	mEnvmap = shared_ptr<Envmap>(new Envmap);
+	mEnvmap = new Envmap();
 	mEnvmap->init();
 	mEnvmap->load("bin/envmap/alex.hdr");
 }
 
 void RenderScene::initShadowmap()
 {
-	mShadowmap = shared_ptr<Shadowmap>(new Shadowmap);
+	mEnvShadowmap = new Shadowmap(64);
+	mShadowmap = new Shadowmap(mScene->mLights.size());
 }
 
 void RenderScene::initMaterials(string path)
 {
-	shared_ptr<ShaderProgram> s0(new ShaderProgram((path + "obj_vert.mtl").c_str(), (path + "obj_frag.mtl").c_str()));
-	shared_ptr<ShaderProgram> s1(new ShaderProgram((path + "phong_vert.mtl").c_str(), (path + "phong_frag.mtl").c_str()));
-	shared_ptr<ShaderProgram> s2(new ShaderProgram((path + "phongIBL_vert.mtl").c_str(), (path + "phongIBL_frag.mtl").c_str()));
-	shared_ptr<ShaderProgram> s3(new ShaderProgram((path + "phongSH_vert.mtl").c_str(), (path + "phongSH_frag.mtl").c_str()));
+	shared_ptr<ShaderProgram> s0(new ShaderProgram((path + "phong_vert.mtl").c_str(), (path + "phong_frag.mtl").c_str()));
+	shared_ptr<ShaderProgram> s1(new ShaderProgram((path + "phongIBL_vert.mtl").c_str(), (path + "phongIBL_frag.mtl").c_str()));
+	shared_ptr<ShaderProgram> s2(new ShaderProgram((path + "phongSH_vert.mtl").c_str(), (path + "phongSH_frag.mtl").c_str()));
 
-	mMaterials.push_back(s0);
-	mMaterials.push_back(s1);
-	mMaterials.push_back(s2);
-	mMaterials.push_back(s3);
+	mMaterialLibraries.push_back(s0);
+	mMaterialLibraries.push_back(s1);
+	mMaterialLibraries.push_back(s2);
 }
 
 void RenderScene::addSceneMesh(string path, glm::mat4 size, glm::mat4 pos)
@@ -55,7 +73,7 @@ void RenderScene::addSceneMesh(string path, glm::mat4 size, glm::mat4 pos)
 	for (auto iter = mScene->mMeshes.begin() + len1; iter != mScene->mMeshes.end(); iter++)
 	{
 		MeshParam m;
-		m.mMatIdx = 2;
+		m.mMatIdx = 0;
 		m.mTrans = pos;
 		m.mScale = size;
 		m.mRotate = glm::mat4(1.f);
@@ -95,7 +113,7 @@ void RenderScene::addSceneMesh(ModelType T, glm::mat4 size, glm::mat4 pos)
 		break;
 	}
 	
-	m.mMatIdx = 2;
+	m.mMatIdx = 0;
 	m.mTrans = pos;
 	m.mScale = size;
 
@@ -116,13 +134,12 @@ void RenderScene::deleteSceneMesh(int meshIdx)
 
 }
 
-void RenderScene::addLight(glm::vec3 lightDir, glm::vec3 lightColor)
+void RenderScene::addLight(Light* light)
 {
-	mScene->mLights.push_back(shared_ptr<Light>(new Light(lightDir, lightColor)));
+	mScene->mLights.push_back(shared_ptr<Light>(light));
 }
 
-void RenderScene::setCamera(glm::vec3 pos)
+void RenderScene::setCamera(Camera* cam)
 {
-	mScene->mCamera = shared_ptr<Camera>(new PerspectiveCamera);
-	mScene->mCamera->mPos = pos;
+	mScene->mCamera = shared_ptr<Camera>(cam);
 }

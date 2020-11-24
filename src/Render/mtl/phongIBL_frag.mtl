@@ -9,14 +9,30 @@ uniform vec3 lightDir;
 uniform vec3 lightColor;
 uniform vec3 objectColor;
 
+uniform mat4 lightVP;
+uniform sampler2DArray ShadowMap;
+
 layout (std140) uniform EnvmapLightBlock
 {
 	vec4 envmapLightDir[128];
 	vec4 envmapLightColor[128];
 };
 
-
 uniform sampler2DArray ShadowMap;
+
+void shadow(int idx)
+{
+	float visibility=1.f;
+	vec4 shadowCoord=lightVP*ShadowMap[idx];
+	for(int i=0;i<128;i++)
+	{
+		float sampleZ=texture(ShadowMap,vec3(shadowCoord.xy,idx)).x;
+		if(sampleZ<shadowCoord.z)
+		{
+			visibility-=0.1;
+		}
+	}
+}
 
 void main()
 {	

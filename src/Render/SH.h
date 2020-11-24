@@ -18,5 +18,5 @@ public:
 		computeLightSHCoeff(const Image<float>& envmap, unsigned int order = 3);
 
 	static vector<vector<float>>
-		computeSceneSHTrans(shared_ptr<Scene> scene, unsigned int order = 3);
+		computeSceneSHTrans(Scene* scene, unsigned int order = 3);
 };

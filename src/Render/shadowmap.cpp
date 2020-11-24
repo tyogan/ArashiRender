@@ -1,7 +1,7 @@
 #include "shadowmap.h"
 
 Shadowmap::Shadowmap(GLuint layers)
-	:mLayers(layers)
+	:mLayerNums(layers)
 {
 	mShadowProgram = shared_ptr<ShaderProgram>(new ShaderProgram("bin/shader/shadowmap_vert.glsl", "bin/shader/shadowmap_frag.glsl"));
 
@@ -9,13 +9,13 @@ Shadowmap::Shadowmap(GLuint layers)
 	glGenTextures(1, &mTextures);
 
 	glBindTexture(GL_TEXTURE_2D_ARRAY, mTextures);
-	glTexStorage3D(GL_TEXTURE_2D_ARRAY, 1, GL_DEPTH_COMPONENT16,
-		1024, 1024, mLayers);
+	glTexImage3D(GL_TEXTURE_2D_ARRAY, 0, GL_DEPTH_COMPONENT, 1024, 1024, mLayerNums, 0, GL_DEPTH_COMPONENT, GL_FLOAT, NULL);
 	glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 	glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 	glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_WRAP_S, GL_REPEAT);
 	glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_WRAP_T, GL_REPEAT);
-
+	GLfloat borderColor[] = { 1.0, 1.0, 1.0, 1.0 };
+	glTexParameterfv(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_BORDER_COLOR, borderColor);
 }
 
 Shadowmap::~Shadowmap()

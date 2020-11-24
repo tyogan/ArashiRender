@@ -117,7 +117,7 @@ void IBLTree::RetreveNodeEnergy(TNode *pNode)
 		pNode->mColor.b * 0.072169f;
 }
 
-CSample *IBLTree::sampleWraping(int nSamples, glm::vec2 *pInputPos)
+EnvmapLight *IBLTree::sampleWraping(int nSamples, glm::vec2 *pInputPos)
 {
 	if (nSamples <= 0 || pInputPos == NULL)
 	{
@@ -125,7 +125,7 @@ CSample *IBLTree::sampleWraping(int nSamples, glm::vec2 *pInputPos)
 	}
 
 	glm::vec2 *lpPoints = new glm::vec2[nSamples];
-	CSample *lpSample = new CSample[nSamples];
+	EnvmapLight *lpSample = new EnvmapLight[nSamples];
 	mRoot->mSampleIdx = new int[nSamples];
 	mRoot->mSampleNum = nSamples;
 	for (int i = 0; i < nSamples; i++)
@@ -143,7 +143,7 @@ CSample *IBLTree::sampleWraping(int nSamples, glm::vec2 *pInputPos)
 	return lpSample;
 }
 
-void IBLTree::RecursiveWarping(TNode *pNode, glm::vec2 *pPos, CSample *pSample)
+void IBLTree::RecursiveWarping(TNode *pNode, glm::vec2 *pPos, EnvmapLight *pSample)
 {
 	if (pNode->mSampleNum == 1 || pNode->mLeft == NULL)
 	{
@@ -154,7 +154,7 @@ void IBLTree::RecursiveWarping(TNode *pNode, glm::vec2 *pPos, CSample *pSample)
 		for (int i = 0; i < pNode->mSampleNum; i++)
 		{
 			glm::vec2 lPos= pPos[pNode->mSampleIdx[i]];
-			CSample *lpSamp = &pSample[mGlobalIndex++];
+			EnvmapLight *lpSamp = &pSample[mGlobalIndex++];
 			lpSamp->pos.x = pNode->mBBox.min.x +
 				(pNode->mBBox.max.x - pNode->mBBox.min.x)*lPos.x;
 			lpSamp->pos.y = pNode->mBBox.min.y +

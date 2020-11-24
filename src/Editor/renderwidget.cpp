@@ -21,7 +21,10 @@ WidgetRender::~WidgetRender()
 void WidgetRender::setRenderScene(RenderScene* renderScene)
 {
 	mRenderScene = renderScene;
-	mRender = new GLRender(renderScene);
+	delete mRender;
+	mRender = new GLRender();
+	mRender->init();
+	mRender->setRenderScene(renderScene);
 }
 
 void WidgetRender::paintEvent(QPaintEvent* event)

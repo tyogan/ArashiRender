@@ -19,5 +19,5 @@ public:
 private:
 	GLuint mFramebuffer;
 	GLuint mTextures;
-	GLuint mLayers;
+	GLuint mLayerNums;
 };

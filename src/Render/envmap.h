@@ -9,8 +9,10 @@
 #include "shader.h"
 #include "sh.h"
 #include "ibltree.h"
+
 #include "Utility/image.h"
 #include "Core/mesh.h"
+#include "Core/light.h"
 
 #include <string>
 #include <vector>
@@ -19,14 +21,6 @@
 using std::string;
 using std::vector;
 using std::shared_ptr;
-
-struct EnvmapLight
-{
-	glm::vec3 mEnvmapLightDir;
-	glm::vec3 mEnvmapLightColor;
-	int lightSize = 0;
-	int lightCapacity = 128;
-};
 
 class RENDER_API Envmap
 {
@@ -44,15 +38,13 @@ private:
 
 public:
 	vector<glm::vec3> mSHLight;
-	CSample* mBgSample;
+	vector<EnvmapLight> mEnvLights;
 
 private:
-	shared_ptr<ShaderProgram> mRenderBgProgram;
-
-	GLuint mCubeTex;
-	GLuint mLoadImageTex;
+	GLuint mEnvmapImageTex;
+	GLuint mEnvmapCubeTex;
 
 	shared_ptr<VAO> mCubeVAO;
-
-
+	shared_ptr<ShaderProgram> mRenderBgProgram;
+	shared_ptr<ShaderProgram> mCreateCubeTexProgram;
 };
