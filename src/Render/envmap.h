@@ -25,7 +25,6 @@ using std::shared_ptr;
 class RENDER_API Envmap
 {
 public:
-	Envmap();
 	~Envmap();
 
 	void init();

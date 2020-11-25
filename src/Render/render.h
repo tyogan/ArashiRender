@@ -11,22 +11,18 @@ class RENDER_API GLRender
 {
 public:
 	void init();
-	void setRenderScene(RenderScene* renderScene);
-	void render(FrameBuffer* fb);
+	void render(FrameBuffer* fb, RenderScene* renderScene);
 	
 private:
-	void renderGBuffer();
-	void renderShadow();
-	void renderObject();
-	void renderEnvmap();
+	void renderGBuffer(RenderScene* renderScene);
+	void renderShadow(RenderScene* renderScene);
+	void renderObject(RenderScene* renderScene);
+	void renderEnvmap(RenderScene* renderScene);
 
 private:
-	RenderScene* mRenderScene;
-
 	struct EnvLightBlock
 	{
 		glm::vec4 lightDir[128];
 		glm::vec4 lightColor[128];
 	} mLightBlock;
-
 };

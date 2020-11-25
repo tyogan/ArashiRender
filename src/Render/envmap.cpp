@@ -1,9 +1,5 @@
 #include "envmap.h"
 
-Envmap::Envmap()
-{
-}
-
 Envmap::~Envmap()
 {
 	glDeleteTextures(1, &mEnvmapImageTex);
@@ -87,7 +83,6 @@ void Envmap::load(std::string path)
 
 void Envmap::createCubeTexture()
 {
-
 	glm::mat4 captureProjection = glm::perspective(90.0f, 1.0f, 0.1f, 10.0f);
 	glm::mat4 captureViews[] =
 	{

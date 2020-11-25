@@ -33,7 +33,6 @@ void Shadowmap::bindForDraw(int idx)
 	glDrawBuffer(GL_NONE);
 	glReadBuffer(GL_NONE);
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
-
 }
 
 GLuint Shadowmap::getShadowTexture()

@@ -57,12 +57,14 @@ void RenderScene::initShadowmap()
 void RenderScene::initMaterials(string path)
 {
 	shared_ptr<ShaderProgram> s0(new ShaderProgram((path + "phong_vert.mtl").c_str(), (path + "phong_frag.mtl").c_str()));
-	shared_ptr<ShaderProgram> s1(new ShaderProgram((path + "phongIBL_vert.mtl").c_str(), (path + "phongIBL_frag.mtl").c_str()));
-	shared_ptr<ShaderProgram> s2(new ShaderProgram((path + "phongSH_vert.mtl").c_str(), (path + "phongSH_frag.mtl").c_str()));
+	/*shared_ptr<ShaderProgram> s1(new ShaderProgram((path + "phongIBL_vert.mtl").c_str(), (path + "phongIBL_frag.mtl").c_str()));
+	shared_ptr<ShaderProgram> s2(new ShaderProgram((path + "phongSH_vert.mtl").c_str(), (path + "phongSH_frag.mtl").c_str()));*/
+
+	std::cout << "hhh";
 
 	mMaterialLibraries.push_back(s0);
-	mMaterialLibraries.push_back(s1);
-	mMaterialLibraries.push_back(s2);
+	//mMaterialLibraries.push_back(s1);
+	//mMaterialLibraries.push_back(s2);
 }
 
 void RenderScene::addSceneMesh(string path, glm::mat4 size, glm::mat4 pos)

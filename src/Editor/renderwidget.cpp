@@ -21,17 +21,15 @@ WidgetRender::~WidgetRender()
 void WidgetRender::setRenderScene(RenderScene* renderScene)
 {
 	mRenderScene = renderScene;
-	delete mRender;
 	mRender = new GLRender();
 	mRender->init();
-	mRender->setRenderScene(renderScene);
 }
 
 void WidgetRender::paintEvent(QPaintEvent* event)
 {
 	QPainter painter(this);
 	
-	mRender->render(mFramebuffer);
+	mRender->render(mFramebuffer, mRenderScene);
 	QImage image(mFramebuffer->mWidth, mFramebuffer->mHeight, QImage::Format_RGB888);
 	mFramebuffer->dump(image.bits());
 	painter.drawImage(0, 0, image.mirrored());
