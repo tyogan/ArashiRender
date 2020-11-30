@@ -10,6 +10,8 @@ uniform vec3 lightDir;
 uniform vec3 lightColor;
 uniform vec3 objectColor;
 
+uniform mat4 lightPV;
+
 uniform sampler2DArray ShadowMap;
 
 void main()
@@ -17,6 +19,9 @@ void main()
 	vec3 l=normalize(lightDir);
 	vec3 n=normalize(fWorldNormal);
 	vec3 diffuse=dot(l,n)*lightColor*objectColor;
-	float color=texture(ShadowMap,vec3(fTexCoords,0)).r;
-	FragColor=vec4(vec3(color),1);
+
+	vec3 color=diffuse;
+
+	//vec3 color=texture(ShadowMap,vec3(fTexCoords,0)).rgb;
+	FragColor=vec4(color,1);
 }

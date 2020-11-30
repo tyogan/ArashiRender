@@ -27,7 +27,7 @@ void RenderScene::initScene()
 	mScene = new Scene();
 	
 	this->addSceneMesh("bin/model/teapot.obj", glm::mat4(1),glm::mat4(1));
-	this->addSceneMesh(ModelType::CUBE, glm::mat4(1), glm::mat4(1));
+	this->addSceneMesh(ModelType::PLANE, glm::mat4(1), glm::mat4(1));
 	
 	Light* light = new Light();
 	light->mLightColor = glm::vec3(0.5f);
@@ -50,8 +50,10 @@ void RenderScene::initEnvmap()
 
 void RenderScene::initShadowmap()
 {
-	mEnvShadowmap = new Shadowmap(64);
-	mShadowmap = new Shadowmap(mScene->mLights.size());
+	mEnvShadowmap = new Shadowmap();
+	mEnvShadowmap->resize(64, 1024);
+	mShadowmap = new Shadowmap();
+	mShadowmap->resize(mScene->mLights.size(), 1024);
 }
 
 void RenderScene::initMaterials(string path)
@@ -59,8 +61,6 @@ void RenderScene::initMaterials(string path)
 	shared_ptr<ShaderProgram> s0(new ShaderProgram((path + "phong_vert.mtl").c_str(), (path + "phong_frag.mtl").c_str()));
 	/*shared_ptr<ShaderProgram> s1(new ShaderProgram((path + "phongIBL_vert.mtl").c_str(), (path + "phongIBL_frag.mtl").c_str()));
 	shared_ptr<ShaderProgram> s2(new ShaderProgram((path + "phongSH_vert.mtl").c_str(), (path + "phongSH_frag.mtl").c_str()));*/
-
-	std::cout << "hhh";
 
 	mMaterialLibraries.push_back(s0);
 	//mMaterialLibraries.push_back(s1);

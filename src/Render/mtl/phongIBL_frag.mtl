@@ -1,32 +1,40 @@
 #version 330 core
 
-in vec3 worldPos;
-in vec3 worldNormal;
+in vec3 fWorldPos;
+in vec3 fWorldNormal;
+in vec2 fTexCoords;
 
 out vec4 FragColor;
 
-uniform vec3 lightDir;
-uniform vec3 lightColor;
-uniform vec3 objectColor;
-
-uniform mat4 lightVP;
-uniform sampler2DArray ShadowMap;
+layout (std140) uniform MainLightBlock
+{
+	vec4 mainLightDir[8];
+	vec4 mainLightColor[8];
+};
+uniform mat4 mainLightVP[8];
+uniform sampler2DArray MainShadowMap;
+uniform int mainLightNums;
 
 layout (std140) uniform EnvmapLightBlock
 {
 	vec4 envmapLightDir[128];
 	vec4 envmapLightColor[128];
 };
+uniform mat4 envmapLightVP[128];
+uniform sampler2DArray EnvShadowMap;
+uniform int envmapLightNums;
 
-uniform sampler2DArray ShadowMap;
+uniform vec3 objectColor;
 
-void shadow(int idx)
+void shadowMainLight()
 {
 	float visibility=1.f;
-	vec4 shadowCoord=lightVP*ShadowMap[idx];
-	for(int i=0;i<128;i++)
+	
+	for(int i=0;i<mainLightNums;i++)
 	{
-		float sampleZ=texture(ShadowMap,vec3(shadowCoord.xy,idx)).x;
+		vec4 lightCoord=mainLightVP[i]*vec4(fWorldPos,1.f);
+		vec3 shadowCoord=lightCoord.xyz/vec3(lightCoord.w);
+		float sampleZ=texture(ShadowMap,vec3(shadowCoord.xy,i)).z;
 		if(sampleZ<shadowCoord.z)
 		{
 			visibility-=0.1;
@@ -41,7 +49,7 @@ void main()
 	vec3 diffuse=dot(l,n)*lightColor;
 
 	vec3 env=vec3(0.f);
-	for(int i=0;i<128;i++)
+	for(int i=0;i<envmapLightNums;i++)
 	{
 		l=normalize(envmapLightDir[i].xyz);
 		env+=max(dot(l,n),0)*envmapLightColor[i].xyz;

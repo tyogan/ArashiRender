@@ -15,6 +15,9 @@ out vec2 fTexCoords;
 void main()
 {
 	gl_Position=P*V*M*vec4(vPosition,1.0);
+	
+	fWorldPos=vec3(M*vec4(vPosition,1.0));
 	fWorldNormal=mat3(transpose(inverse(M)))*vNormal;
+	//gl_Position=vec4(vPosition,1.0);
 	fTexCoords=vTexCoords;
 }
