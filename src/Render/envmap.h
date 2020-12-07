@@ -22,6 +22,12 @@ using std::string;
 using std::vector;
 using std::shared_ptr;
 
+struct EnvmapLight
+{
+	glm::vec3 mDir;
+	glm::vec3 mColor;
+};
+
 class RENDER_API Envmap
 {
 public:

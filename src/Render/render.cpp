@@ -2,7 +2,6 @@
 #include <time.h>
 void GLRender::init()
 {
-	
 }
 
 void GLRender::setLightMatrix(RenderScene* renderScene)
@@ -24,16 +23,23 @@ void GLRender::setLightMatrix(RenderScene* renderScene)
 	glBindBuffer(GL_UNIFORM_BUFFER, 0);
 	glBindBufferBase(GL_UNIFORM_BUFFER, 0, shLight);
 
-	float u, v;
-	for (int i = 0; i < 128; i++)
+	struct EnvLightBlock
 	{
-		u = renderScene->mEnvmap->mEnvLights[i].pos.x;
-		v = renderScene->mEnvmap->mEnvLights[i].pos.y;
-		double phi = 2 * 3.1415926 * u;
-		double theta = acos(1 - 2 * v);
-		double r = sin(theta);
-		mLightBlock.lightDir[i] = -glm::vec4(r * cos(phi), cos(theta), r * sin(phi), 0.f);
-		mLightBlock.lightColor[i] = glm::vec4(renderScene->mEnvmap->mEnvLights[i].color, 1.f);
+		glm::vec4 lightDir[128];
+		glm::vec4 lightColor[128];
+		glm::mat4 lightPV[128];
+	} mLightBlock;
+
+	GLfloat nearPlane = 1.f, farPlane = 10.f;
+	glm::mat4 shadowProj = glm::ortho(-10.0f, 10.0f, -10.0f, 10.0f, nearPlane, farPlane);
+	glm::mat4 shadowView;
+	for (int i = 0; i < renderScene->mEnvmap->mEnvLights.size(); i++)
+	{
+		shadowView = glm::lookAt(renderScene->mEnvmap->mEnvLights[i].mDir, glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+		mLightBlock.lightDir[i] = glm::vec4(renderScene->mEnvmap->mEnvLights[i].mDir, 0.f);
+		mLightBlock.lightColor[i] = glm::vec4(renderScene->mEnvmap->mEnvLights[i].mColor, 1.f);
+		glm::mat4 tmp = shadowProj * shadowView;
+		mLightBlock.lightPV[i] = shadowProj * shadowView;
 	}
 
 	GLuint envLight;
@@ -47,6 +53,7 @@ void GLRender::setLightMatrix(RenderScene* renderScene)
 void GLRender::render(FrameBuffer* fb, RenderScene* renderScene)
 {
 	renderMainLightShadow(renderScene);
+	renderEnvLightShadow(renderScene);
 	fb->bindForDrawGBuffer();
 	renderGBuffer(renderScene);
 	fb->bindForDrawImage();
@@ -99,6 +106,29 @@ void GLRender::renderMainLightShadow(RenderScene* renderScene)
 			renderScene->mRenderMeshParam[i].mVAO->draw();
 		}
 	}
+	renderScene->mShadowmap->mShadowProgram->release();
+	glCullFace(GL_BACK);
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+}
+
+void GLRender::renderEnvLightShadow(RenderScene* renderScene)
+{
+	glCullFace(GL_FRONT);
+	GLfloat nearPlane = 1.f, farPlane = 10.f;
+	glm::mat4 shadowProj = glm::ortho(-10.0f, 10.0f, -10.0f, 10.0f, nearPlane, farPlane);
+	glm::mat4 shadowView = glm::lookAt(renderScene->mScene->mLights[0]->mLightDir, glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+	for (int k = 0; k < renderScene->mEnvmap->mEnvLights.size(); k++)
+	{
+		shadowView = glm::lookAt(renderScene->mEnvmap->mEnvLights[k].mDir, glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+		renderScene->mEnvShadowmap->mShadowProgram->setMat4f("V", shadowView);
+		for (int i = 0; i < renderScene->mRenderMeshParam.size(); i++)
+		{
+			glm::mat4 model = renderScene->mRenderMeshParam[i].mTrans* renderScene->mRenderMeshParam[i].mRotate*renderScene->mRenderMeshParam[i].mScale;
+			renderScene->mEnvShadowmap->mShadowProgram->setMat4f("M", model);
+			renderScene->mRenderMeshParam[i].mVAO->draw();
+		}
+	}
+	renderScene->mEnvShadowmap->mShadowProgram->release();
 	glCullFace(GL_BACK);
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
@@ -114,7 +144,9 @@ void GLRender::renderObject(RenderScene* renderScene)
 
 	for (int i = 0; i < renderScene->mRenderMeshParam.size(); i++)
 	{
-		auto mtl = renderScene->mMaterialLibraries[renderScene->mRenderMeshParam[i].mMatIdx];
+		int idx = renderScene->mRenderMeshParam[i].mMatIdx;
+		auto mtl = renderScene->mMaterialLibraries[idx];
+
 		mtl->use();
 		glm::mat4 model = renderScene->mRenderMeshParam[i].mTrans* renderScene->mRenderMeshParam[i].mRotate*renderScene->mRenderMeshParam[i].mScale;
 		mtl->setMat4f("M", model);
@@ -124,13 +156,27 @@ void GLRender::renderObject(RenderScene* renderScene)
 		mtl->setVec3("lightColor", renderScene->mScene->mLights[0]->mLightColor);
 		mtl->setVec3("objectColor", glm::vec3(1.f));
 		mtl->setInt("ShadowMap", 0);
-		//mtl->setBlock("SHLightCoeff", 0);
-		//mtl->setBlock("EnvmapLightBlock", 1);
-		//mtl->setVec3("coeff", mRenderScene->mEnvmap->mSHLight[0]);
-		glActiveTexture(GL_TEXTURE0);
-		glBindTexture(GL_TEXTURE_2D_ARRAY, renderScene->mShadowmap->getShadowTexture());
+
+		switch (idx)
+		{
+		case 0: break;
+		case 1: 
+		{
+			mtl->setBlock("EnvmapLightBlock", 1);
+			mtl->setInt("envmapLightNums", renderScene->mEnvmap->mEnvLights.size());
+			mtl->setInt("EnvShadowMap", 0);
+			glActiveTexture(GL_TEXTURE0);
+			glBindTexture(GL_TEXTURE_2D_ARRAY, renderScene->mEnvShadowmap->getShadowTexture());
+		}; break;
+		case 2:
+		{
+			mtl->setBlock("SHLightCoeff", 0);
+		}; break;
+		default:
+			break;
+		}
+
 		renderScene->mRenderMeshParam[i].mVAO->draw();
-		//mPlane->draw();
 
 		mtl->release();
 	}
@@ -141,23 +187,4 @@ void GLRender::renderEnvmap(RenderScene* renderScene)
 	glm::mat4 view = glm::mat4(glm::mat3(renderScene->mScene->mCamera->getViewMat()));
 	glm::mat4 proj = renderScene->mScene->mCamera->getProjMat();
 	renderScene->mEnvmap->drawBackground(view, proj);
-
-
-}
-void GLRender::renderEnvmapShadow(RenderScene* renderScene)
-{
-	//GLfloat nearPlane = 1.f, farPlane = 10.f;
-	//glm::mat4 shadowProj = glm::ortho(-10.0f, 10.0f, -10.0f, 10.0f, nearPlane, farPlane);
-	//glm::mat4 shadowView = glm::lookAt(mRenderScene->mScene->mLights[0]->mLightDir, glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
-	//for (int k = 0; k < 128; k++)
-	//{
-	//	shadowView = glm::lookAt(glm::vec3(mLightBlock.lightDir[k]), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
-	//	mRenderScene->mEnvShadowmap->mShadowProgram->setMat4f("V", shadowView);
-	//	for (int i = 0; i < mRenderScene->mRenderMeshParam.size(); i++)
-	//	{
-	//		glm::mat4 model = mRenderScene->mRenderMeshParam[i].mTrans* mRenderScene->mRenderMeshParam[i].mRotate*mRenderScene->mRenderMeshParam[i].mScale;
-	//		mRenderScene->mEnvShadowmap->mShadowProgram->setMat4f("M", model);
-	//		mRenderScene->mRenderMeshParam[i].mVAO->draw();
-	//	}
-	//}
 }

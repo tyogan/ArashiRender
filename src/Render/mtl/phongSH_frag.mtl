@@ -19,7 +19,7 @@ void main()
 	vec3 diffuse=dot(l,n)*lightColor;
 	vec3 env=shLightColor;
 
-	vec3 res=(diffuse+env)*objectColor;
+	vec3 res=(env)*objectColor;
 
 	FragColor=vec4(pow(res,vec3(1/2.2)),1.f);
 }

@@ -1,5 +1,6 @@
 #pragma once
 
+#include <sstream>>
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
@@ -28,12 +29,6 @@ private:
 	void renderMainLightShadow(RenderScene* renderScene);
 	void renderObject(RenderScene* renderScene);
 	void renderEnvmap(RenderScene* renderScene);
-	void renderEnvmapShadow(RenderScene* renderScene);
+	void renderEnvLightShadow(RenderScene* renderScene);
 
-private:
-	struct EnvLightBlock
-	{
-		glm::vec4 lightDir[128];
-		glm::vec4 lightColor[128];
-	} mLightBlock;
 };

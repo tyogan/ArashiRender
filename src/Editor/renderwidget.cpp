@@ -23,6 +23,7 @@ void WidgetRender::setRenderScene(RenderScene* renderScene)
 	mRenderScene = renderScene;
 	mRender = new GLRender();
 	mRender->init();
+	mRender->setLightMatrix(mRenderScene);
 }
 
 void WidgetRender::paintEvent(QPaintEvent* event)

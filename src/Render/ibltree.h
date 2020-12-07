@@ -8,7 +8,7 @@
 #include <glm/glm.hpp>
 #include "Utility/image.h"
 
-struct EnvmapLight
+struct CSample
 {
 	glm::vec2 pos;
 	glm::vec3 color;
@@ -54,7 +54,7 @@ public:
 public:
 	IBLTree(int nDepth, Image<float> image);
 	~IBLTree(void);
-	EnvmapLight *sampleWraping(int nSamples, glm::vec2 *pInputPos);
+	CSample *sampleWraping(int nSamples, glm::vec2 *pInputPos);
 
 private:
 	void BuildTree(int nDepth);
@@ -62,7 +62,7 @@ private:
 	void RecursiveSubdivision(TNode *pNode);
 	void ImageColorScale(Image<float> &image);
 
-	void RecursiveWarping(TNode *pNode, glm::vec2 *pPoints, EnvmapLight *pSample);
+	void RecursiveWarping(TNode *pNode, glm::vec2 *pPoints, CSample *pSample);
 private:
 	Image<float> mImage;
 	TNode *mRoot;
