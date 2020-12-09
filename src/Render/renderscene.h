@@ -46,6 +46,7 @@ private:
 	void initEnvmap();
 	void initShadowmap();
 	void initMaterials(string path);
+	void initSSAO();
 
 public:
 	vector<vector<float>> mSHData;

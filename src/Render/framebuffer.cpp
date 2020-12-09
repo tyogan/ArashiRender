@@ -3,6 +3,7 @@
 FrameBuffer::FrameBuffer(int width,int height)
 	:mWidth(width),mHeight(height)
 {
+	mSSAO = new SSAO(mWidth, mHeight);
 	glGenFramebuffers(1, &mFBO);
 	glGenTextures(5, mRenderTextures);
 	initFramebuffer();
@@ -10,6 +11,7 @@ FrameBuffer::FrameBuffer(int width,int height)
 
 FrameBuffer::~FrameBuffer()
 {
+	delete mSSAO;
 }
 
 void FrameBuffer::initFramebuffer()

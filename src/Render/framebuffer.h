@@ -2,6 +2,8 @@
 #include "glad/glad.h"
 #include <glm/glm.hpp>
 
+#include "ssao.h"
+
 #include <iostream>
 
 class RENDER_API FrameBuffer
@@ -23,9 +25,7 @@ public:
 	int mWidth;
 	int mHeight;
 
-private:
-	GLuint mFBO;
-	union 
+	union
 	{
 		GLuint mRenderTextures[5];
 		struct
@@ -33,4 +33,9 @@ private:
 			GLuint color, position, normal, texcoord, midx;
 		};
 	};
+
+	SSAO* mSSAO;
+
+private:
+	GLuint mFBO;
 };

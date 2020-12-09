@@ -27,7 +27,9 @@ void RenderScene::initScene()
 	mScene = new Scene();
 	
 	this->addSceneMesh("bin/model/teapot.obj", glm::mat4(1),glm::mat4(1));
-	this->addSceneMesh(ModelType::PLANE, glm::mat4(1), glm::mat4(1));
+	glm::mat4 trans;
+	trans = glm::translate(trans, glm::vec3(0, -1.f, 0));
+	this->addSceneMesh(ModelType::CUBE, glm::mat4(1), trans);
 	
 	Light* light = new Light();
 	light->mLightColor = glm::vec3(0.5f);
@@ -36,7 +38,7 @@ void RenderScene::initScene()
 	light = nullptr;
 
 	Camera* cam = new PerspectiveCamera();
-	cam->mPos = glm::vec3(0, 0, 10);
+	cam->mPos = glm::vec3(0, 3, 8);
 	this->setCamera(cam);
 	cam = nullptr;
 }
@@ -59,12 +61,14 @@ void RenderScene::initShadowmap()
 void RenderScene::initMaterials(string path)
 {
 	shared_ptr<ShaderProgram> s0(new ShaderProgram((path + "phong_vert.mtl").c_str(), (path + "phong_frag.mtl").c_str()));
-	shared_ptr<ShaderProgram> s1(new ShaderProgram((path + "phongIBL_vert.mtl").c_str(), (path + "phongIBL_frag.mtl").c_str()));
-	shared_ptr<ShaderProgram> s2(new ShaderProgram((path + "phongSH_vert.mtl").c_str(), (path + "phongSH_frag.mtl").c_str()));
+	shared_ptr<ShaderProgram> s1(new ShaderProgram((path + "phongSH_vert.mtl").c_str(), (path + "phongSH_frag.mtl").c_str()));
+	shared_ptr<ShaderProgram> s2(new ShaderProgram((path + "phongIBL_vert.mtl").c_str(), (path + "phongIBL_frag.mtl").c_str()));
+	shared_ptr<ShaderProgram> s3(new ShaderProgram((path + "phongSSAO_vert.mtl").c_str(), (path + "phongSSAO_frag.mtl").c_str()));
 
 	mMaterialLibraries.push_back(s0);
 	mMaterialLibraries.push_back(s1);
 	mMaterialLibraries.push_back(s2);
+	mMaterialLibraries.push_back(s3);
 }
 
 void RenderScene::addSceneMesh(string path, glm::mat4 size, glm::mat4 pos)
@@ -75,7 +79,7 @@ void RenderScene::addSceneMesh(string path, glm::mat4 size, glm::mat4 pos)
 	for (auto iter = mScene->mMeshes.begin() + len1; iter != mScene->mMeshes.end(); iter++)
 	{
 		MeshParam m;
-		m.mMatIdx = 1;
+		m.mMatIdx = 2;
 		m.mTrans = pos;
 		m.mScale = size;
 		m.mRotate = glm::mat4(1.f);
@@ -115,7 +119,7 @@ void RenderScene::addSceneMesh(ModelType T, glm::mat4 size, glm::mat4 pos)
 		break;
 	}
 	
-	m.mMatIdx = 1;
+	m.mMatIdx = 2;
 	m.mTrans = pos;
 	m.mScale = size;
 

@@ -1,7 +1,7 @@
 #version 330 core
 
-in vec3 worldPos;
-in vec3 worldNormal;
+in vec3 fWorldPos;
+in vec3 fWorldNormal;
 in vec3 shLightColor;
 
 out vec4 FragColor;
@@ -15,7 +15,7 @@ uniform sampler2DArray ShadowMap;
 void main()
 {	
 	vec3 l=normalize(lightDir);
-	vec3 n=normalize(worldNormal);
+	vec3 n=normalize(fWorldPos);
 	vec3 diffuse=dot(l,n)*lightColor;
 	vec3 env=shLightColor;
 

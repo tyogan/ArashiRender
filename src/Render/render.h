@@ -31,4 +31,7 @@ private:
 	void renderEnvmap(RenderScene* renderScene);
 	void renderEnvLightShadow(RenderScene* renderScene);
 
+	void renderSSAO(FrameBuffer* fb, RenderScene* renderScene);
+
+	shared_ptr<VAO> mPlane;
 };

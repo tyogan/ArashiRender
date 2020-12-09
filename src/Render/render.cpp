@@ -2,6 +2,9 @@
 #include <time.h>
 void GLRender::init()
 {
+	shared_ptr<Mesh> m = Mesh::createPlane();
+	mPlane = shared_ptr<VAO>(new VAO);
+	mPlane->create(m);
 }
 
 void GLRender::setLightMatrix(RenderScene* renderScene)
@@ -56,6 +59,7 @@ void GLRender::render(FrameBuffer* fb, RenderScene* renderScene)
 	renderEnvLightShadow(renderScene);
 	fb->bindForDrawGBuffer();
 	renderGBuffer(renderScene);
+	renderSSAO(fb, renderScene);
 	fb->bindForDrawImage();
 	renderEnvmap(renderScene);
 	renderObject(renderScene);
@@ -162,15 +166,15 @@ void GLRender::renderObject(RenderScene* renderScene)
 		case 0: break;
 		case 1: 
 		{
+			mtl->setBlock("SHLightCoeff", 0);
+		}; break;
+		case 2:
+		{
 			mtl->setBlock("EnvmapLightBlock", 1);
 			mtl->setInt("envmapLightNums", renderScene->mEnvmap->mEnvLights.size());
 			mtl->setInt("EnvShadowMap", 0);
 			glActiveTexture(GL_TEXTURE0);
 			glBindTexture(GL_TEXTURE_2D_ARRAY, renderScene->mEnvShadowmap->getShadowTexture());
-		}; break;
-		case 2:
-		{
-			mtl->setBlock("SHLightCoeff", 0);
 		}; break;
 		default:
 			break;
@@ -180,6 +184,28 @@ void GLRender::renderObject(RenderScene* renderScene)
 
 		mtl->release();
 	}
+}
+
+void GLRender::renderSSAO(FrameBuffer* fb, RenderScene* renderScene)
+{
+	glViewport(0, 0, 960, 720);
+	fb->mSSAO->bindForCreate();
+	fb->mSSAO->mSSAOProgram->use();
+
+	glm::mat4 view = renderScene->mScene->mCamera->getViewMat();
+	glm::mat4 proj = renderScene->mScene->mCamera->getProjMat();
+	fb->mSSAO->mSSAOProgram->setMat4f("projection",proj);
+	fb->mSSAO->mSSAOProgram->setMat4f("view", view);
+	glActiveTexture(GL_TEXTURE0);
+	glBindTexture(GL_TEXTURE_2D, fb->position);
+	glActiveTexture(GL_TEXTURE1);
+	glBindTexture(GL_TEXTURE_2D, fb->normal);
+	glActiveTexture(GL_TEXTURE2);
+	glBindTexture(GL_TEXTURE_2D, fb->mSSAO->mNoiseTexture);
+
+	mPlane->draw();
+	fb->mSSAO->mSSAOProgram->release();
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
 
 void GLRender::renderEnvmap(RenderScene* renderScene)

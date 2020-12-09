@@ -1,8 +1,8 @@
 #version 330 core
 
-layout (location=0)in vec3 position;
-layout (location=1)in vec3 normal;
-layout (location=2)in vec2 texCoords;
+layout(location=0) in vec3 vPosition;
+layout(location=1) in vec3 vNormal;
+layout(location=2) in vec2 vTexcoords;
 
 layout (location=3)in vec4 sh0;
 layout (location=4)in vec4 sh1;
@@ -18,14 +18,14 @@ layout (std140) uniform SHLightCoeff
 	vec4 coeffs[16];
 };
 
-out vec3 worldPos;
-out vec3 worldNormal;
+out vec3 fWorldPos;
+out vec3 fWorldNormal;
 out vec3 shLightColor;
 
 void main()
 {
-	gl_Position=P*V*M*vec4(position,1.0);
-	worldNormal=mat3(transpose(inverse(M)))*normal;
+	gl_Position=P*V*M*vec4(vPosition,1.0);
+	fWorldNormal=mat3(transpose(inverse(M)))*vNormal;
 	shLightColor=(sh0.x*coeffs[0]+sh0.y*coeffs[1]+sh0.z*coeffs[2]+sh0.w*coeffs[3]
 				 +sh1.x*coeffs[4]+sh1.y*coeffs[5]+sh1.z*coeffs[6]+sh1.w*coeffs[7]
 				 +sh2.x*coeffs[8]+sh2.y*coeffs[9]+sh2.z*coeffs[10]+sh2.w*coeffs[11]
