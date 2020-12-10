@@ -176,6 +176,10 @@ void GLRender::renderObject(RenderScene* renderScene)
 			glActiveTexture(GL_TEXTURE0);
 			glBindTexture(GL_TEXTURE_2D_ARRAY, renderScene->mEnvShadowmap->getShadowTexture());
 		}; break;
+		case 3:
+		{
+
+		}; break;
 		default:
 			break;
 		}
