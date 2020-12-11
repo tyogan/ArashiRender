@@ -40,6 +40,7 @@ public:
 
 private:
 	void createCubeTexture();
+	void createIrradianceTexture();
 
 public:
 	vector<glm::vec3> mSHLight;
@@ -48,8 +49,10 @@ public:
 private:
 	GLuint mEnvmapImageTex;
 	GLuint mEnvmapCubeTex;
+	GLuint mIrradianceCubeTex;
 
-	shared_ptr<VAO> mCubeVAO;
+	shared_ptr<VAO> mSphereVAO;
 	shared_ptr<ShaderProgram> mRenderBgProgram;
 	shared_ptr<ShaderProgram> mCreateCubeTexProgram;
+	shared_ptr<ShaderProgram> mCreateIrradianceTexProgram;
 };

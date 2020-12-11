@@ -159,7 +159,6 @@ void GLRender::renderObject(RenderScene* renderScene)
 		mtl->setVec3("lightDir", renderScene->mScene->mLights[0]->mLightDir);
 		mtl->setVec3("lightColor", renderScene->mScene->mLights[0]->mLightColor);
 		mtl->setVec3("objectColor", glm::vec3(1.f));
-		mtl->setInt("ShadowMap", 0);
 
 		switch (idx)
 		{

@@ -12,6 +12,8 @@ out vec3 fWorldPos;
 out vec3 fWorldNormal;
 out vec2 fTexCoords;
 
+out vec3 fScreenPos;
+
 void main()
 {
 	gl_Position=P*V*M*vec4(vPosition,1.0);
