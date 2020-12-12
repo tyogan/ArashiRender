@@ -27,7 +27,7 @@ public:
 private:
 	void renderGBuffer(RenderScene* renderScene);
 	void renderMainLightShadow(RenderScene* renderScene);
-	void renderObject(RenderScene* renderScene);
+	void renderObject(RenderScene* renderScene, FrameBuffer* fb);
 	void renderEnvmap(RenderScene* renderScene);
 	void renderEnvLightShadow(RenderScene* renderScene);
 

@@ -45,11 +45,11 @@ private:
 public:
 	vector<glm::vec3> mSHLight;
 	vector<EnvmapLight> mEnvLights;
+	GLuint mIrradianceCubeTex;
 
 private:
 	GLuint mEnvmapImageTex;
 	GLuint mEnvmapCubeTex;
-	GLuint mIrradianceCubeTex;
 
 	shared_ptr<VAO> mSphereVAO;
 	shared_ptr<ShaderProgram> mRenderBgProgram;

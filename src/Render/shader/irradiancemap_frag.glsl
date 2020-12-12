@@ -16,7 +16,7 @@ vec3 irradianceColor()
 	vec3 right=normalize(cross(up,Normal));
 	up=normalize(cross(Normal,right));
 
-	float sampleDelta=1.0/40;
+	float sampleDelta=1.0/40.0;
 	float nrSamples=0.0;
 
 	for(float phi=0.0;phi<2*PI;phi+=sampleDelta)

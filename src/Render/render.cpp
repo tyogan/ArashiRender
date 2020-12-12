@@ -62,7 +62,7 @@ void GLRender::render(FrameBuffer* fb, RenderScene* renderScene)
 	renderSSAO(fb, renderScene);
 	fb->bindForDrawImage();
 	renderEnvmap(renderScene);
-	renderObject(renderScene);
+	renderObject(renderScene,fb);
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
 
@@ -137,7 +137,7 @@ void GLRender::renderEnvLightShadow(RenderScene* renderScene)
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
 
-void GLRender::renderObject(RenderScene* renderScene)
+void GLRender::renderObject(RenderScene* renderScene,FrameBuffer* fb)
 {
 	glm::mat4 view, proj;
 	view = renderScene->mScene->mCamera->getViewMat();
@@ -177,7 +177,12 @@ void GLRender::renderObject(RenderScene* renderScene)
 		}; break;
 		case 3:
 		{
-
+			mtl->setInt("irradianceMap", 0);
+			glActiveTexture(GL_TEXTURE0);
+			glBindTexture(GL_TEXTURE_CUBE_MAP, renderScene->mEnvmap->mIrradianceCubeTex);
+			mtl->setInt("ssaoMap", 1);
+			glActiveTexture(GL_TEXTURE0);
+			glBindTexture(GL_TEXTURE_2D, fb->mSSAO->mTextures[0]);
 		}; break;
 		default:
 			break;

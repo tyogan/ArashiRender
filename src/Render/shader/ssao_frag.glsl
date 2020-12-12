@@ -17,12 +17,11 @@ const vec2 noiseScale = vec2(960.0/4.0, 720.0/4.0);
 
 void main()
 {
-	ivec2 texCoord = ivec2(gl_FragCoord.xy);
 	ivec2 resolution = ivec2(960,720);
 
-    vec3 fragPos = (view * vec4(texture(gPositionDepth, texCoord).xyz,1.f)).xyz;
-	vec3 normal = (view * vec4(normalize(texture(gNormal, texCoord).rgb),0)).xyz;
-	vec3 randomVec = normalize(texture(texNoise, gl_FragCoord.xy / 4.0).xyz);
+    vec3 fragPos = (view * vec4(texture(gPositionDepth, fTexCoords).xyz,1.f)).xyz;
+	vec3 normal = (view * vec4(normalize(texture(gNormal, fTexCoords).rgb),0)).xyz;
+	vec3 randomVec = normalize(texture(texNoise, fTexCoords*noiseScale).xyz);
 	
 	vec3 tangent = normalize(randomVec - normal * dot(randomVec, normal));
 	vec3 bitangent = cross(normal, tangent);
@@ -39,8 +38,7 @@ void main()
 		offset.xyz /= offset.w;
 		offset.xyz = offset.xyz * 0.5 + 0.5;
 
-		ivec2 texCoord0 = ivec2(offset.xy * resolution);
-		float sampleDepth = (view * vec4(texture(gPositionDepth, texCoord0).xyz, 1)).z;
+		float sampleDepth = (view * vec4(texture(gPositionDepth, offset.xy).xyz, 1.f)).z;
 		
 		float rangeCheck = smoothstep(0.0, 1.0, radius / abs(fragPos.z - sampleDepth));
 		occlusion += (sampleDepth >= pos.z ? 1.0 : 0.0) * rangeCheck; 

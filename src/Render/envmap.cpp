@@ -57,7 +57,7 @@ void Envmap::drawBackground(glm::mat4 view,glm::mat4 proj)
 	glDepthMask(GL_FALSE);
 	mRenderBgProgram->use();
 	glActiveTexture(GL_TEXTURE0);
-	glBindTexture(GL_TEXTURE_CUBE_MAP, mIrradianceCubeTex);
+	glBindTexture(GL_TEXTURE_CUBE_MAP, mEnvmapCubeTex);
 	mRenderBgProgram->setMat4f("V", view);
 	mRenderBgProgram->setMat4f("P", proj);
 	mSphereVAO->draw();
@@ -183,7 +183,7 @@ void Envmap::createIrradianceTexture()
 	mCreateIrradianceTexProgram->setMat4f("P", captureProjection);
 	mCreateIrradianceTexProgram->setInt("cubeEnvmap", 0);
 	glActiveTexture(GL_TEXTURE0);
-	glBindTexture(GL_TEXTURE_CUBE_MAP, mIrradianceCubeTex);
+	glBindTexture(GL_TEXTURE_CUBE_MAP, mEnvmapCubeTex);
 	for (unsigned int i = 0; i < 6; ++i)
 	{
 		mCreateIrradianceTexProgram->setMat4f("V", captureViews[i]);

@@ -8,16 +8,14 @@ uniform mat4 M;
 uniform mat4 V;
 uniform mat4 P;
 
-out vec3 fWorldPos;
+out vec4 fScreenPos;
 out vec3 fWorldNormal;
 out vec2 fTexCoords;
-
-out vec3 fScreenPos;
 
 void main()
 {
 	gl_Position=P*V*M*vec4(vPosition,1.0);
-	fWorldPos=vec3(M*vec4(vPosition,1.0));
+	fScreenPos=P*V*M*vec4(vPosition,1.0);
 	fWorldNormal=mat3(transpose(inverse(M)))*vNormal;
 	fTexCoords=vTexCoords;
 }

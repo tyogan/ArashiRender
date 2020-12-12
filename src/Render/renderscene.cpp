@@ -28,8 +28,7 @@ void RenderScene::initScene()
 	
 	this->addSceneMesh("bin/model/teapot.obj", glm::mat4(1),glm::mat4(1));
 	glm::mat4 trans;
-	trans = glm::translate(trans, glm::vec3(0, -1.f, 0));
-	this->addSceneMesh(ModelType::CUBE, glm::mat4(1), trans);
+
 	
 	Light* light = new Light();
 	light->mLightColor = glm::vec3(0.5f);
@@ -79,7 +78,7 @@ void RenderScene::addSceneMesh(string path, glm::mat4 size, glm::mat4 pos)
 	for (auto iter = mScene->mMeshes.begin() + len1; iter != mScene->mMeshes.end(); iter++)
 	{
 		MeshParam m;
-		m.mMatIdx = 2;
+		m.mMatIdx = 3;
 		m.mTrans = pos;
 		m.mScale = size;
 		m.mRotate = glm::mat4(1.f);
@@ -119,7 +118,7 @@ void RenderScene::addSceneMesh(ModelType T, glm::mat4 size, glm::mat4 pos)
 		break;
 	}
 	
-	m.mMatIdx = 2;
+	m.mMatIdx = 3;
 	m.mTrans = pos;
 	m.mScale = size;
 

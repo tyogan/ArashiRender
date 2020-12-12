@@ -1,6 +1,6 @@
 #version 330 core
 
-in vec3 fWorldPos;
+in vec4 fScreenPos;
 in vec3 fWorldNormal;
 in vec2 fTexCoords;
 
@@ -13,10 +13,13 @@ uniform sampler2D ssaoMap;
 
 void main()
 {	
-	vec3 l;
 	vec3 n=normalize(fWorldNormal);
-	vec3 env=vec3(0.f);
-	
+	vec3 env=texture(irradianceMap,n).rgb;
+
+	vec3 pos=fScreenPos.xyz/vec3(fScreenPos.w)*0.5+vec3(0.5);
+
+	vec3 ssaoColor=0.3*vec3(texture(ssaoMap,pos.xy).r);
+
 	vec3 res=env*objectColor;
 	FragColor=vec4(pow(res,vec3(1/2.2)),1);
 }
