@@ -182,7 +182,7 @@ void GLRender::renderObject(RenderScene* renderScene,FrameBuffer* fb)
 			glBindTexture(GL_TEXTURE_CUBE_MAP, renderScene->mEnvmap->mIrradianceCubeTex);
 			mtl->setInt("ssaoMap", 1);
 			glActiveTexture(GL_TEXTURE1);
-			glBindTexture(GL_TEXTURE_2D, fb->mSSAO->mTextures[0]);
+			glBindTexture(GL_TEXTURE_2D, fb->mSSAO->getTexture());
 		}; break;
 		default:
 			break;
@@ -219,9 +219,16 @@ void GLRender::renderSSAO(FrameBuffer* fb, RenderScene* renderScene)
 	{
 		fb->mSSAO->mSSAOProgram->setVec3("samples[" + std::to_string(i) + "]", fb->mSSAO->mKernel[i]);
 	}
-
 	mPlane->draw();
 	fb->mSSAO->mSSAOProgram->release();
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+	fb->mSSAO->bindForCreateBlurTex();
+	fb->mSSAO->mSSAOBlurProgram->use();
+	glActiveTexture(GL_TEXTURE0);
+	glBindTexture(GL_TEXTURE_2D, fb->mSSAO->getBlurTexture());
+	mPlane->draw();
+	fb->mSSAO->mSSAOBlurProgram->release();
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
 

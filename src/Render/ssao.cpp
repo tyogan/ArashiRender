@@ -88,6 +88,13 @@ void SSAO::bindForCreate()
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 }
 
+void SSAO::bindForCreateBlurTex()
+{
+	glBindFramebuffer(GL_FRAMEBUFFER, mFBO);
+	glDrawBuffer(GL_COLOR_ATTACHMENT1);
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+}
+
 GLuint SSAO::getTexture()
 {
 	return ssaoTex;

@@ -20,6 +20,7 @@ public:
 	~SSAO();
 
 	void bindForCreate();
+	void bindForCreateBlurTex();
 
 	GLuint getTexture();
 	GLuint getBlurTexture();
@@ -28,6 +29,12 @@ private:
 	void sampleKernel();
 
 public:
+	vector<glm::vec3> mKernel;
+	GLuint mNoiseTexture;
+	ShaderProgram* mSSAOProgram;
+	ShaderProgram* mSSAOBlurProgram;
+
+private:
 	GLuint mFBO;
 	union
 	{
@@ -39,9 +46,4 @@ public:
 
 	GLuint mWidth;
 	GLuint mHeight;
-	vector<glm::vec3> mKernel;
-	GLuint mNoiseTexture;
-
-	ShaderProgram* mSSAOProgram;
-	ShaderProgram* mSSAOBlurProgram;
 };
