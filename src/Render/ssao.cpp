@@ -6,10 +6,6 @@ SSAO::SSAO(GLuint width,GLuint height)
 	mSSAOProgram = new ShaderProgram("bin/shader/ssao_vert.glsl", "bin/shader/ssao_frag.glsl");
 	mSSAOBlurProgram = new ShaderProgram("bin/shader/ssao_vert.glsl", "bin/shader/ssaoblur_frag.glsl");
 
-	mSSAOProgram->setInt("gPositionDepth", 0);
-	mSSAOProgram->setInt("gNormal", 1);
-	mSSAOProgram->setInt("texNoise", 2);
-
 	glGenFramebuffers(1, &mFBO);
 	glGenTextures(2, mTextures);
 
@@ -49,7 +45,7 @@ SSAO::~SSAO()
 
 void SSAO::sampleKernel()
 {
-	std::uniform_real_distribution<GLfloat> randomFloats(0.0, 1.0); // Ëæ»ú¸¡µãÊý£¬·¶Î§0.0 - 1.0
+	std::uniform_real_distribution<GLfloat> randomFloats(0.0, 1.0);
 	std::default_random_engine generator;
 	for (GLuint i = 0; i < 64; ++i)
 	{
@@ -74,7 +70,6 @@ void SSAO::sampleKernel()
 			randomFloats(generator) * 2.0 - 1.0,
 			0.0f);
 		ssaoNoise.push_back(noise);
-		mSSAOProgram->setVec3("samples[" + std::to_string(i) + "]", mKernel[i]);
 	}
 
 	glGenTextures(1, &mNoiseTexture);

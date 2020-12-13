@@ -18,8 +18,8 @@ void main()
 
 	vec3 pos=fScreenPos.xyz/vec3(fScreenPos.w)*0.5+vec3(0.5);
 
-	vec3 ssaoColor=0.3*vec3(texture(ssaoMap,pos.xy).r);
+	vec3 ssaoColor=vec3(texture(ssaoMap,pos.xy).r);
 
-	vec3 res=env*objectColor;
+	vec3 res=env*objectColor*ssaoColor;
 	FragColor=vec4(pow(res,vec3(1/2.2)),1);
 }

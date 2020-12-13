@@ -181,7 +181,7 @@ void GLRender::renderObject(RenderScene* renderScene,FrameBuffer* fb)
 			glActiveTexture(GL_TEXTURE0);
 			glBindTexture(GL_TEXTURE_CUBE_MAP, renderScene->mEnvmap->mIrradianceCubeTex);
 			mtl->setInt("ssaoMap", 1);
-			glActiveTexture(GL_TEXTURE0);
+			glActiveTexture(GL_TEXTURE1);
 			glBindTexture(GL_TEXTURE_2D, fb->mSSAO->mTextures[0]);
 		}; break;
 		default:
@@ -204,12 +204,21 @@ void GLRender::renderSSAO(FrameBuffer* fb, RenderScene* renderScene)
 	glm::mat4 proj = renderScene->mScene->mCamera->getProjMat();
 	fb->mSSAO->mSSAOProgram->setMat4f("projection",proj);
 	fb->mSSAO->mSSAOProgram->setMat4f("view", view);
+
+	fb->mSSAO->mSSAOProgram->setInt("gPositionDepth", 0);
+	fb->mSSAO->mSSAOProgram->setInt("gNormal", 1);
+	fb->mSSAO->mSSAOProgram->setInt("texNoise", 2);
+
 	glActiveTexture(GL_TEXTURE0);
 	glBindTexture(GL_TEXTURE_2D, fb->position);
 	glActiveTexture(GL_TEXTURE1);
 	glBindTexture(GL_TEXTURE_2D, fb->normal);
 	glActiveTexture(GL_TEXTURE2);
 	glBindTexture(GL_TEXTURE_2D, fb->mSSAO->mNoiseTexture);
+	for (int i = 0; i < 64; i++)
+	{
+		fb->mSSAO->mSSAOProgram->setVec3("samples[" + std::to_string(i) + "]", fb->mSSAO->mKernel[i]);
+	}
 
 	mPlane->draw();
 	fb->mSSAO->mSSAOProgram->release();

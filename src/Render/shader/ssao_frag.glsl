@@ -20,7 +20,7 @@ void main()
 	ivec2 resolution = ivec2(960,720);
 
     vec3 fragPos = (view * vec4(texture(gPositionDepth, fTexCoords).xyz,1.f)).xyz;
-	vec3 normal = (view * vec4(normalize(texture(gNormal, fTexCoords).rgb),0)).xyz;
+	vec3 normal = transpose(inverse(mat3(view))) * texture(gNormal, fTexCoords).xyz;
 	vec3 randomVec = normalize(texture(texNoise, fTexCoords*noiseScale).xyz);
 	
 	vec3 tangent = normalize(randomVec - normal * dot(randomVec, normal));

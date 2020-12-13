@@ -28,7 +28,8 @@ void RenderScene::initScene()
 	
 	this->addSceneMesh("bin/model/teapot.obj", glm::mat4(1),glm::mat4(1));
 	glm::mat4 trans;
-
+	trans = glm::translate(trans, glm::vec3(0, -1.f, 0));
+	this->addSceneMesh(ModelType::CUBE, glm::mat4(1), trans);
 	
 	Light* light = new Light();
 	light->mLightColor = glm::vec3(0.5f);
