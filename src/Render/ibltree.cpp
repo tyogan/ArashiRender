@@ -7,6 +7,7 @@ IBLTree::IBLTree(int nDepth, Image<float> image)
 	mImage = image;
 	ImageColorScale(mImage);
 	BuildTree(nDepth);
+	std::cout << "hhhh";
 }
 
 IBLTree::~IBLTree()
@@ -16,8 +17,8 @@ IBLTree::~IBLTree()
 
 void IBLTree::ImageColorScale(Image<float> &image)
 {
-	int Height = image.height;
-	int Width = image.width;
+	int Height = mImage.height;
+	int Width = mImage.width;
 	float *fpFactor = new float[Height];
 	float fHeight = Height / 2.f;
 	float fAreaSalar = 0.f;

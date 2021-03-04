@@ -88,25 +88,28 @@ void Envmap::load(std::string path)
 	createCubeTexture();
 	createIrradianceTexture();
 
+	mSHLight.clear();
 	mSHLight = SphericalHarmonics::computeLightSHCoeff(img);
 	
 	int treeDepth = 8;
 	int sampleNum = 128;
 	glm::vec2* pnts = Samplefunc::samplePoints(sampleNum);
 	
+	mEnvLights.clear();
 	IBLTree tree(treeDepth, img);
 	CSample* bgSample = tree.sampleWraping(sampleNum, pnts);
 	float u, v;
-	for (int i = 0; i < 128; i++)
+	for (int i = 0; i < sampleNum; i++)
 	{
 		u = bgSample[i].pos.x;
 		v = bgSample[i].pos.y;
 		double phi = 2 * 3.1415926 * u;
 		double theta = acos(1 - 2 * v);
 		double r = sin(theta);
+
 		EnvmapLight tmpLight;
 		tmpLight.mDir = -glm::vec3(r * cos(phi), cos(theta), r * sin(phi));
-		tmpLight.mColor = glm::vec3(bgSample[i].color);
+		tmpLight.mColor = bgSample[i].color;
 		mEnvLights.push_back(tmpLight);
 	}
 	delete[] bgSample;

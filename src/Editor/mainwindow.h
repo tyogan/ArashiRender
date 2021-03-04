@@ -11,7 +11,6 @@
 #include <QFile>
 
 #include "renderwidget.h"
-#include "propertywidget.h"
 #include "hierarchywidget.h"
 #include "settingwidget.h"
 
@@ -28,20 +27,13 @@ public:
 
 private:
 	void initUI();
-	void initMenuBar();
 	void initToolBar();
 	void initConnection();
-
-	void openObjectFile();
-	void createPlane();
-	void createCube();
-	void createSphere();
 
 private:
 	WidgetRender* mRenderWidget;
 	WidgetHierarchy* mHierarchyWidget;
 	WidgetSetting* mSettingWidget;
-	WidgetProperty* mPropertyWidget;
 
 	RenderScene* mRenderScene;
 };

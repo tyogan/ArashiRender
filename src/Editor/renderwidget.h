@@ -14,7 +14,6 @@ public:
 	~WidgetRender();
 
 	void setRenderScene(RenderScene* renderScene);
-
 	virtual void paintEvent(QPaintEvent* event);
 
 	virtual void mouseMoveEvent(QMouseEvent *event) override;
@@ -22,6 +21,9 @@ public:
 
 signals:
 	void pickMesh(int meshIdx);
+
+public slots:
+	void resetEnvmapLight();
 
 private:
 	FrameBuffer* mFramebuffer;

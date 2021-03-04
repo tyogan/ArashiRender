@@ -19,6 +19,9 @@ struct RenderParam
 class RENDER_API GLRender    
 {
 public:
+	GLRender();
+	~GLRender();
+
 	void init();
 	void render(FrameBuffer* fb, RenderScene* renderScene);
 	
@@ -33,5 +36,8 @@ private:
 
 	void renderSSAO(FrameBuffer* fb, RenderScene* renderScene);
 
+private:
 	shared_ptr<VAO> mPlane;
+	GLuint mShLight;
+	GLuint mEnvLight;
 };

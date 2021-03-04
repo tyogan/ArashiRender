@@ -16,7 +16,7 @@ void main()
 {	
 	vec3 l=normalize(lightDir);
 	vec3 n=normalize(fWorldPos);
-	vec3 diffuse=dot(l,n)*lightColor;
+	vec3 diffuse=clamp(dot(l,n),0,1)*lightColor;
 	vec3 env=shLightColor;
 
 	vec3 res=(env)*objectColor;

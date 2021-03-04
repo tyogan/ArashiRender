@@ -9,6 +9,7 @@
 
 #define M_PI 3.14159265358979323846
 
+//SH Vector
 std::vector<glm::vec3> SphericalHarmonics::computeLightSHCoeff(const Image<float>& env, unsigned int order)
 {
 	int width = env.width;
@@ -93,7 +94,7 @@ struct SHSample
 };
 
 static vector<SHSample> precomputed_samples;
-void initSampleLights(int order)
+void initSamples(int order)
 {
 	const int nSamples = 128;
 	precomputed_samples.resize(nSamples);
@@ -159,7 +160,7 @@ vector<vector<float>> SphericalHarmonics::computeSceneSHTrans(Scene* pScene, uns
 {
 	if (precomputed_samples.empty())
 	{
-		initSampleLights(order);
+		initSamples(order);
 	}
 	RTCDevice device = rtcNewDevice(NULL);
 

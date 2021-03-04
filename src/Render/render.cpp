@@ -1,5 +1,17 @@
 #include "render.h"
 #include <time.h>
+GLRender::GLRender()
+{
+	glGenBuffers(1, &mShLight);
+	glGenBuffers(1, &mEnvLight);
+}
+
+GLRender::~GLRender()
+{
+	glDeleteBuffers(1, &mShLight);
+	glDeleteBuffers(1, &mEnvLight);
+}
+
 void GLRender::init()
 {
 	shared_ptr<Mesh> m = Mesh::createPlane();
@@ -20,18 +32,19 @@ void GLRender::setLightMatrix(RenderScene* renderScene)
 	}
 
 	GLuint shLight;
-	glGenBuffers(1, &shLight);
-	glBindBuffer(GL_UNIFORM_BUFFER, shLight);
+	
+	glBindBuffer(GL_UNIFORM_BUFFER, mShLight);
 	glBufferData(GL_UNIFORM_BUFFER, sizeof(SHBlock), &block0, GL_DYNAMIC_DRAW);
 	glBindBuffer(GL_UNIFORM_BUFFER, 0);
-	glBindBufferBase(GL_UNIFORM_BUFFER, 0, shLight);
+	glBindBufferBase(GL_UNIFORM_BUFFER, 0, mShLight);
+
 
 	struct EnvLightBlock
 	{
 		glm::vec4 lightDir[128];
 		glm::vec4 lightColor[128];
 		glm::mat4 lightPV[128];
-	} mLightBlock;
+	} lightBlock;
 
 	GLfloat nearPlane = 1.f, farPlane = 10.f;
 	glm::mat4 shadowProj = glm::ortho(-10.0f, 10.0f, -10.0f, 10.0f, nearPlane, farPlane);
@@ -39,18 +52,16 @@ void GLRender::setLightMatrix(RenderScene* renderScene)
 	for (int i = 0; i < renderScene->mEnvmap->mEnvLights.size(); i++)
 	{
 		shadowView = glm::lookAt(renderScene->mEnvmap->mEnvLights[i].mDir, glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
-		mLightBlock.lightDir[i] = glm::vec4(renderScene->mEnvmap->mEnvLights[i].mDir, 0.f);
-		mLightBlock.lightColor[i] = glm::vec4(renderScene->mEnvmap->mEnvLights[i].mColor, 1.f);
+		lightBlock.lightDir[i] = glm::vec4(renderScene->mEnvmap->mEnvLights[i].mDir, 0.f);
+		lightBlock.lightColor[i] = glm::vec4(renderScene->mEnvmap->mEnvLights[i].mColor, 1.f);
 		glm::mat4 tmp = shadowProj * shadowView;
-		mLightBlock.lightPV[i] = shadowProj * shadowView;
+		lightBlock.lightPV[i] = shadowProj * shadowView;
 	}
 
-	GLuint envLight;
-	glGenBuffers(1, &envLight);
-	glBindBuffer(GL_UNIFORM_BUFFER, envLight);
-	glBufferData(GL_UNIFORM_BUFFER, sizeof(EnvLightBlock), &mLightBlock, GL_DYNAMIC_DRAW);
+	glBindBuffer(GL_UNIFORM_BUFFER, mEnvLight);
+	glBufferData(GL_UNIFORM_BUFFER, sizeof(EnvLightBlock), &lightBlock, GL_DYNAMIC_DRAW);
 	glBindBuffer(GL_UNIFORM_BUFFER, 0);
-	glBindBufferBase(GL_UNIFORM_BUFFER, 1, envLight);
+	glBindBufferBase(GL_UNIFORM_BUFFER, 1, mEnvLight);
 }
 
 void GLRender::render(FrameBuffer* fb, RenderScene* renderScene)
@@ -158,24 +169,12 @@ void GLRender::renderObject(RenderScene* renderScene,FrameBuffer* fb)
 		mtl->setMat4f("P", proj);
 		mtl->setVec3("lightDir", renderScene->mScene->mLights[0]->mLightDir);
 		mtl->setVec3("lightColor", renderScene->mScene->mLights[0]->mLightColor);
-		mtl->setVec3("objectColor", glm::vec3(1.f));
+		mtl->setVec3("objectColor", glm::vec3(0.7f));
 
 		switch (idx)
 		{
 		case 0: break;
 		case 1: 
-		{
-			mtl->setBlock("SHLightCoeff", 0);
-		}; break;
-		case 2:
-		{
-			mtl->setBlock("EnvmapLightBlock", 1);
-			mtl->setInt("envmapLightNums", renderScene->mEnvmap->mEnvLights.size());
-			mtl->setInt("EnvShadowMap", 0);
-			glActiveTexture(GL_TEXTURE0);
-			glBindTexture(GL_TEXTURE_2D_ARRAY, renderScene->mEnvShadowmap->getShadowTexture());
-		}; break;
-		case 3:
 		{
 			mtl->setInt("irradianceMap", 0);
 			glActiveTexture(GL_TEXTURE0);
@@ -183,6 +182,18 @@ void GLRender::renderObject(RenderScene* renderScene,FrameBuffer* fb)
 			mtl->setInt("ssaoMap", 1);
 			glActiveTexture(GL_TEXTURE1);
 			glBindTexture(GL_TEXTURE_2D, fb->mSSAO->getTexture());
+		}; break;
+		case 2:
+		{
+			mtl->setBlock("SHLightCoeff", 0);
+		}; break;
+		case 3:
+		{
+			mtl->setBlock("EnvmapLightBlock", 1);
+			mtl->setInt("envmapLightNums", renderScene->mEnvmap->mEnvLights.size());
+			mtl->setInt("EnvShadowMap", 0);
+			glActiveTexture(GL_TEXTURE0);
+			glBindTexture(GL_TEXTURE_2D_ARRAY, renderScene->mEnvShadowmap->getShadowTexture());
 		}; break;
 		default:
 			break;

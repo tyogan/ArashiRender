@@ -17,6 +17,7 @@ struct MeshParam
 {
 	shared_ptr<VAO> mVAO;
 	string mObjectName;
+	string mMatName;
 	int mMatIdx;
 	glm::mat4 mScale;
 	glm::mat4 mRotate;
